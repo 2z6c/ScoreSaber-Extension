@@ -1,0 +1,22 @@
+#link-to-user-profile img{
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+#search-mode-icon {
+  position: absolute;
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  top: 0;
+  bottom: 0;
+  left: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+input[name=search] {
+  padding-left: 38px;
+}

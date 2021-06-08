@@ -1,0 +1,32 @@
+i[role="button"] {
+  cursor: pointer;
+  &:hover {
+    color: #3273dc;
+  }
+}
+
+.button-chart-expand {
+  position: absolute;
+  right: 0;
+}
+
+th.song > div > :not(:last-child) {
+  flex: 0 0 auto;
+}
+
+.difficulty-label {
+  text-align: center;
+  color: #fff;
+  border-radius: 4px;
+  width: 68px;
+  margin-right: 8px;
+  font-weight: normal;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+}
+
+.mapper-icon {
+  font-size: .9rem;
+  margin-right: 4px;
+}

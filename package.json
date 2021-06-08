@@ -1,0 +1,19 @@
+{
+  "name": "scoresaber-extension",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js",
+    "compile:sass": "sass src/scss/header.scss:dist/header.css src/scss/songPage.scss:dist/songPage.css src/scss/userProfile.scss:dist/userProfile.css"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.12.7",
+    "eslint": "^7.28.0",
+    "sass": "^1.34.1"
+  }
+}
