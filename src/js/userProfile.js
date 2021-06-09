@@ -1,4 +1,5 @@
 import {addOperation} from './util.js';
+import {getSongStars, loadRankedSongs} from './scoresaber';
 
 function getUserName() {
   const title = document.getElementsByTagName('title')[0];
@@ -111,11 +112,11 @@ function addScoreBar(){
   }
 }
 
-const makeDifficultyLabel = (text,color) => `
+const makeDifficultyLabel = (text,color,star) => `
 <td>
   <div class="difficulty-label" style="background:${color}">
     <div>${text}</div>
-    <div><i class="fas fa-star"></i>99.99</div>
+    <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star}</div>
   </div>
 </td>`;
 
@@ -128,18 +129,23 @@ function arrangeScoreTable() {
   tr[0].insertAdjacentHTML('beforeend','<th>Op.</th>');
   //各行の処理
   for ( let i = 1; i < tr.length; i++ ) {
+    const hash = tr[i].querySelector('img').src.match(/[0-9A-F]{40}/)[0];
+
     //難易度移動
     const dif = tr[i].querySelector('span[style^="color"]');
-    dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(dif.textContent,dif.style.color));
+    const diffText = dif.textContent.trim();
+    const star = getSongStars(hash,diffText);
+    dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
     dif.remove();
     shortenTimestamp(tr[i]);
     moveMapper(tr[i]);
     //DLリンク追加
-    addOperation(tr[i]);
+    addOperation(tr[i],hash);
   }
 }
 
-window.addEventListener('load',()=>{
+window.addEventListener('load',async ()=>{
+  await loadRankedSongs();
   changeRankingLink('a[href="/global"]');
   changeRankingLink('a[href^="/global?country="]');
   const trs = document.querySelectorAll('.ranking.songs tbody tr');

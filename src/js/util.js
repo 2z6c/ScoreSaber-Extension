@@ -14,9 +14,9 @@ export const makeBookmarkButton = (hash) => `
   data-hash="${hash}"
 ></i>`;
 
-export function addOperation(tr){
+export function addOperation(tr,hash){
   const td = document.createElement('td');
-  const hash = tr.querySelector('img').src.match(/[0-9A-F]{40}/)[0];
+  // const hash = tr.querySelector('img').src.match(/[0-9A-F]{40}/)[0];
   tr.appendChild(td);
   td.insertAdjacentHTML('beforeend',makeDLLink(hash));
   td.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);

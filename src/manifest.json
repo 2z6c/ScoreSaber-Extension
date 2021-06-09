@@ -19,6 +19,9 @@
       "css": ["header.css"]
     }
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "permissions": [
     "activeTab",
     "storage"
