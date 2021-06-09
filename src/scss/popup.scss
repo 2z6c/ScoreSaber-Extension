@@ -16,12 +16,12 @@ button {
 }
 
 #update-ranked-songs:disabled i {
-  animation: Loading 5s infinite;
+  animation: Loading 5s linear infinite;
   transform-origin: center center;
 }
 @keyframes Loading {
   0% { transform: rotate(0); }
-  100% { transform: rotate(100%); }
+  100% { transform: rotate(360deg); }
 }
 
 #avatar {
