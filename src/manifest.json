@@ -15,6 +15,7 @@
     },
     {
       "matches": ["https://scoresaber.com/*"],
+      "exclude_matches": ["*://*/api*"],
       "js": ["js/header.js"],
       "css": ["header.css"]
     }
@@ -31,7 +32,8 @@
       "16": "/icons/16x16.png",
       "32": "/icons/32x32.png",
       "48": "/icons/48x48.png"
-    }
+    },
+    "default_popup": "popup.html"
   },
   "icons": {
     "16": "/icons/16x16.png",

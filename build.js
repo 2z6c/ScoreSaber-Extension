@@ -5,6 +5,7 @@ esbuild.build({
     'src/js/userProfile.js',
     'src/js/header.js',
     'src/js/songPage.js',
+    'src/js/popup.js',
     'src/background.js'
   ],
   bundle: true,
@@ -17,3 +18,6 @@ esbuild.build({
   target: ['chrome88'],
   watch,
 }).catch(()=>process.exit(1));
+
+import {promises as fs} from 'fs';
+fs.copyFile('src/manifest.json','dist/manifest.json');

@@ -1,0 +1,33 @@
+section {
+  display: flex;
+  flex-flow: column nowrap;
+  margin: 8px;
+}
+
+h1, h2 {
+  margin: 0 0 4px 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+button {
+  cursor: pointer;
+}
+
+#lock-user-id {
+  width: 32px;
+}
+
+.form-row {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+}

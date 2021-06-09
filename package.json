@@ -6,14 +6,18 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build.js",
-    "compile:sass": "sass src/scss/header.scss:dist/header.css src/scss/songPage.scss:dist/songPage.css src/scss/userProfile.scss:dist/userProfile.css"
+    "build:js": "node build.js",
+    "compile:sass": "sass src/scss/header.scss:dist/header.css src/scss/songPage.scss:dist/songPage.css src/scss/userProfile.scss:dist/userProfile.css src/scss/popup.scss:dist/popup.css",
+    "compile:pug": "pug src/ui/popup.pug -o dist/",
+    "build": "npm run build:js & npm run compile:sass & npm run compile:pug"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.12.7",
     "eslint": "^7.28.0",
+    "pug": "^3.0.2",
+    "pug-cli": "^1.0.0-alpha6",
     "sass": "^1.34.1"
   }
 }
