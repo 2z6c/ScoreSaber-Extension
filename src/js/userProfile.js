@@ -7,8 +7,8 @@ function getUserName() {
 }
 
 function getPP() {
-  const pp = document.querySelector('li:nth-child(2)');
-  return pp.textContent.replace(/[^0-9,.]/g, '').replace(',','%2c');
+  const pp = document.querySelector('meta[property="og:description"]').content.split('\n')[1];
+  return pp.replace(/[^0-9,.]/g, '').replace(',','%2c');
 }
 
 function changeRankingLink(selector) {
@@ -34,29 +34,60 @@ function changeSongRankingLink(tr) {
 
 function addButtonSetPlayer() {
   const title = document.querySelector('.title a');
-  const button = document.createElement('i');
-  button.classList.add('far','fa-id-badge');
-  button.setAttribute('role','button');
-  button.setAttribute('title','Set to My Own Account.');
-  button.addEventListener('click',setAsUser);
-  title.insertAdjacentElement('afterend',button);
+  title.insertAdjacentHTML('afterend',`
+  <i
+    id="button-set-my-account"
+    class="far fa-id-badge"
+    role="button"
+    title="Set to My Account."
+  ></i>
+  `);
+  title.nextElementSibling.addEventListener('click',setMyAccount);
+  title.insertAdjacentHTML('afterend',`
+  <i
+    id="button-unset-my-account"
+    class="fas fa-id-badge"
+    role="button"
+    title="Unset My Account."
+  ></i>
+  `);
+  title.nextElementSibling.addEventListener('click',unsetMyAccount);
 }
 
-function setAsUser() {
-  const uid = location.pathname.match(/\d+/)[0];
-  const username = getUserName();
-  const avatar = document.querySelector('.avatar > img').src;
-  chrome.storage.local.set({uid,username,avatar});
+function setMyAccount(e) {
+  const user = {
+    id: location.pathname.match(/\d+/)[0],
+    name: getUserName(),
+    avatar: document.querySelector('.avatar > img').src,
+    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0]
+  }
+  chrome.storage.local.set({user});
+  e.target.closest('h5').classList.add('my-account');
+}
+
+function unsetMyAccount(e) {
+  chrome.storage.local.remove('user');
+  e.target.closest('h5').classList.remove('my-account');
+}
+
+function checkMyAccount() {
+  const id = location.pathname.match(/(?<=\/u\/)\d+/)[0];
+  chrome.storage.local.get('user',({user})=>{
+    if ( user?.id === id ) document.querySelector('.title.is-5').classList.add('my-account');
+  });
 }
 
 function addButtonExpandChart() {
-  /** @type {HTMLElement} */
   const chart = document.querySelector('.rankChart');
-  const i = document.createElement('i');
-  i.classList.add('fas','fa-expand','button-chart-expand');
-  i.setAttribute('role','button');
+  chart.insertAdjacentHTML('afterbegin',`
+  <i
+    class="fas fa-expand button-chart-expand"
+    role="button"
+    title="expand chart"
+  ></i>
+  `);
+  const i = chart.querySelector('i');
   i.addEventListener('click',expandChart);
-  chart.insertAdjacentElement('afterbegin',i);
 }
 
 let isChartExpanded = false;
@@ -116,7 +147,7 @@ const makeDifficultyLabel = (text,color,star) => `
 <td>
   <div class="difficulty-label" style="background:${color}">
     <div>${text}</div>
-    <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star}</div>
+    <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star?.toFixed(2)}</div>
   </div>
 </td>`;
 
@@ -129,7 +160,7 @@ function arrangeScoreTable() {
   tr[0].insertAdjacentHTML('beforeend','<th>Op.</th>');
   //各行の処理
   for ( let i = 1; i < tr.length; i++ ) {
-    const hash = tr[i].querySelector('img').src.match(/[0-9A-F]{40}/)[0];
+    const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
 
     //難易度移動
     const dif = tr[i].querySelector('span[style^="color"]');
@@ -146,6 +177,7 @@ function arrangeScoreTable() {
 
 window.addEventListener('load',async ()=>{
   await loadRankedSongs();
+  checkMyAccount();
   changeRankingLink('a[href="/global"]');
   changeRankingLink('a[href^="/global?country="]');
   const trs = document.querySelectorAll('.ranking.songs tbody tr');

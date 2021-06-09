@@ -15,6 +15,21 @@ button {
   cursor: pointer;
 }
 
+#update-ranked-songs:disabled i {
+  animation: Loading 5s infinite;
+  transform-origin: center center;
+}
+@keyframes Loading {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(100%); }
+}
+
+#avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
 #lock-user-id {
   width: 32px;
 }
@@ -22,6 +37,8 @@ button {
 .form-row {
   display: flex;
   flex-flow: row nowrap;
+  margin-bottom: 4px;
+  align-items: center;
 }
 
 .hidden {

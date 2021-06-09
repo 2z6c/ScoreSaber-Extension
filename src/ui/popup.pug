@@ -20,7 +20,11 @@ html(lang="en")
       img(src="icons/16x16.png")
       | Score Saber Extension
     section#user-id-section
-      h2 Player ID
+      h2 My Account
+      #player-info.form-row
+        img#avatar
+        a#user-name
+        img#country-flag
       .form-row
         input#user-id(
           type="text"
@@ -28,11 +32,12 @@ html(lang="en")
         )
         button#lock-user-id
           i.fas.fa-lock-open
-      span#error-user-id.error.hidden Invalid User ID.
+      span#error-user-id.error.hidden
     section#ranked-data-section 
       h2 Ranked Map Data
       button#update-ranked-songs
         i.fas.fa-sync
+      span.error.hidden
       span Last Update: 
         b#last-update-date 
     script(src="/js/popup.js") 

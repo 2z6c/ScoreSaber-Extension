@@ -10,6 +10,18 @@ i[role="button"] {
   right: 0;
 }
 
+.my-account {
+  #button-set-my-account {
+    display: none;
+  }
+  #button-unset-my-account {
+    display: inline;
+  }
+}
+#button-unset-my-account {
+  display: none;
+}
+
 th.song > div > :not(:last-child) {
   flex: 0 0 auto;
 }

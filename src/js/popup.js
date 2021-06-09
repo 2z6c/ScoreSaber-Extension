@@ -1,22 +1,34 @@
-import { getLastUpdate } from './scoresaber';
+import { fetchRankedSongs, getLastUpdate } from './scoresaber';
 
 function setUserID() {
-  chrome.storage.local.get('uid',({uid})=>{
-    if ( !uid ) return;
+  chrome.storage.local.get([
+    'user'
+  ],({user})=>{
+    if ( !user ) {
+      document.getElementById('player-info').classList.add('hidden');
+      return;
+    }
     /** @type {HTMLInputElement} */
     const input = document.getElementById('user-id');
-    input.value = uid;
+    const a = document.getElementById('user-name');
+    a.textContent = user.name;
+    a.setAttribute('href',`https://scoresaber.com/u/${user.id}`);
+    document.getElementById('avatar').src = user.avatar;
+    document.getElementById('country-flag').src = `https://scoresaber.com/imports/images/flags/${user.country}.png`;
+    input.value = user.id;
+    if ( !locked ) input.nextSibling.click();
   });
-  document.getElementById('lock-user-id').addEventListener('click',toggleLock);
 }
 
 let locked = false;
 /** @param {MouseEvent} e */
 function toggleLock(e) {
   locked = !locked;
-  const i = e.currentTarget.querySelector('i');
+  const button = e.currentTarget;
+  button.title = locked ? 'Unlock' : 'Lock';
+  const i = button.querySelector('i');
   i.className = 'fas ' + (locked?'fa-lock':'fa-lock-open');
-  const input = e.currentTarget.previousSibling;
+  const input = button.previousSibling;
   input.disabled = locked;
 }
 
@@ -25,7 +37,21 @@ async function setLastUpdate() {
   b.textContent = new Date(await getLastUpdate()).toLocaleString();
 }
 
+/** @param {MouseEvent} e */
+async function updateRankList(e) {
+  /** @type {HTMLButtonElement} */
+  const button = e.currentTarget;
+  button.disabled = true;
+  try {
+    await fetchRankedSongs();
+  } finally {
+    button.disabled = false;
+  }
+}
+
 window.addEventListener('load',()=>{
+  document.getElementById('lock-user-id').addEventListener('click',toggleLock);
   setUserID();
   setLastUpdate();
-})
+  document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
+});

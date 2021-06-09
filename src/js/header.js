@@ -1,18 +1,17 @@
 async function addUserIcon() {
-  const {uid,username,avatar} = await new Promise(r=>chrome.storage.local.get(['uid','username','avatar'],r));
-  if ( !uid ) return;
-  const icon = document.createElement('img');
-  icon.src = avatar;
-  // icon.addEventListener('error',set404avatar);
-  const a = document.createElement('a');
-  a.appendChild(icon);
-  a.id = 'link-to-user-profile';
-  a.setAttribute('href',`/u/${uid}`);
-  a.setAttribute('role',`button`);
-  a.setAttribute('title',username);
-  a.classList.add('navbar-item');
+  const {user} = await new Promise(r=>chrome.storage.local.get('user',r));
+  if ( !user ) return;
   const parent = document.querySelector('.navbar-start');
-  parent.insertAdjacentElement('afterbegin',a);
+  parent.insertAdjacentHTML('afterbegin',`
+  <a
+    id="link-to-user-profile"
+    href="/u/${user.id}"
+    role="button"
+    title="${user.name}"
+    class="navbar-item"
+  >
+    <img src="${user.avatar}">
+  </a>`);
 }
 
 const makeSearchSwitcher = ({placeholder,icon}) => `
