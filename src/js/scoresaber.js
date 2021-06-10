@@ -9,10 +9,14 @@ const RANK_URL = (limit,page) => `${BASE_URL}api.php?function=get-leaderboards&c
 let rank = {};
 
 export async function fetchRankedSongs({difference=false}={}) {
+  if ( Object.keys(rank).length === 0 ) difference = false;
   const limit = difference ? 50 : 1000;
   let s = 0, d = 0;
-  if ( !difference ) rank = {};
-  for ( let i = 1;; i++ ) {
+  if ( !difference ) {
+    console.log('fetch all maps.');
+    rank = {};
+  }
+  REQUEST: for ( let i = 1;; i++ ) {
     console.log('fetch scoresaber ranked data. page ',i);
     try {
       const res = await fetch(RANK_URL(limit,i));
@@ -25,7 +29,7 @@ export async function fetchRankedSongs({difference=false}={}) {
           s++;
         }
         const diffKey = extructDifficulty(diff);
-        if ( rank[id][diffKey] ) return;
+        if ( rank[id][diffKey] ) break REQUEST;
         rank[id][diffKey] = stars;
         d++;
       }

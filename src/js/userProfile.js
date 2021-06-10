@@ -2,6 +2,8 @@ import {addOperation} from './util.js';
 import {getSongStars, loadRankedSongs} from './scoresaber';
 import { pushStorage, readStorage } from './storage.js';
 
+const UID = location.pathname.match(/\d+/)[0];
+
 function getUserName() {
   const title = document.getElementsByTagName('title')[0];
   return title.textContent.replace(/'s profile \| ScoreSaber!$/, '');
@@ -36,15 +38,7 @@ function changeSongRankingLink(tr) {
 async function addButtonSetPlayer() {
   const locked = (await readStorage('user'))?.locked;
   const title = document.querySelector('.title a');
-  title.insertAdjacentHTML('afterend',`
-  <i
-    id="button-add-favorite"
-    class="far fa-heart"
-    role="button"
-    title="Add my favorite."
-  ></i>
-  `);
-  title.nextElementSibling.addEventListener('click',addFavorite);
+  addFavoriteButton(title);
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-set-my-account"
@@ -68,7 +62,7 @@ async function addButtonSetPlayer() {
 
 function setMyAccount(e) {
   const user = {
-    id: location.pathname.match(/\d+/)[0],
+    id: UID,
     name: getUserName(),
     avatar: document.querySelector('.avatar > img').src,
     country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
@@ -78,9 +72,23 @@ function setMyAccount(e) {
   e.target.closest('h5').classList.add('my-account');
 }
 
+async function addFavoriteButton(title) {
+  const fav = await readStorage('favorite');
+  const isFav = fav.some(f=>f.id === UID);
+  title.insertAdjacentHTML('afterend',`
+  <i
+    id="button-add-favorite"
+    class="${isFav?'fas':'far'} fa-heart"
+    role="button"
+    title="Add my favorite."
+  ></i>
+  `);
+  title.nextElementSibling.addEventListener('click',addFavorite);
+}
+
 function addFavorite() {
   pushStorage('favorite',{
-    id: location.pathname.match(/\d+/)[0],
+    id: UID,
     name: getUserName(),
     avatar: document.querySelector('.avatar > img').src,
     country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
@@ -93,7 +101,7 @@ function unsetMyAccount(e) {
 }
 
 function checkMyAccount() {
-  const id = location.pathname.match(/(?<=\/u\/)\d+/)[0];
+  const id = UID;
   chrome.storage.local.get('user',({user})=>{
     if ( user?.id === id ) document.querySelector('.title.is-5').classList.add('my-account');
   });
@@ -164,6 +172,7 @@ function addAccracyRank(tr){
   let rating = 'E';
   if ( value === 100.0 ) rating = 'SSS';
   else if ( value >= 90.0 ) rating = 'SS';
+  else if ( value >= 80.0 ) rating = 'S';
   else if ( value >= 65.0 ) rating = 'A';
   else if ( value >= 50.0 ) rating = 'B';
   else if ( value >= 35.0 ) rating = 'C';

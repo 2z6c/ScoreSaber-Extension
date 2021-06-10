@@ -1,4 +1,5 @@
 const STORAGE = chrome.storage.local;
+export const KEY_FAVORITE = 'favorite';
 
 /**
  * @param {string} key 
@@ -31,8 +32,20 @@ export async function writeStorage( key, value ) {
 }
 
 export async function pushStorage( key, value ) {
-  const list = await readStorage( key );
-  if ( !(list instanceof Array) ) throw new Error(`${key} is not array.`);
+  let list = await readStorage( key );
+  if ( !(list instanceof Array) ) {
+    if ( !list ) list = [];
+    else throw new Error(`${key} is not array.`);
+  }
   list.push(value);
   return writeStorage(key,list);
+}
+
+export async function removeFavorite( id ) {
+  /** @type {*[]} */
+  let list = await readStorage(KEY_FAVORITE);
+  if ( !list ) return;
+  const index = list.findIndex(v=>v.id===id);
+  if ( index >= 0 ) list.splice( index, 1 );
+  return writeStorage(KEY_FAVORITE,list);
 }

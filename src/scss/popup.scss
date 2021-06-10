@@ -43,6 +43,7 @@ nav {
 
 nav > .tab {
   border-radius: 4px 4px 0 0;
+  padding: 4px;
   flex: 1 0 auto;
   text-align: center;
   cursor: pointer;
@@ -101,4 +102,45 @@ article {
 
 .error {
   color: red;
+}
+
+#favorite-player-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favorite-player-avator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.favorite-player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 8px;
+  flex: 1 1 auto;
+}
+
+.favorite-item {
+  display: flex;
+  margin: 4px 0;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  &:hover {
+    box-shadow: 2px 2px 4px rgba(0 0 0 / 15%), -1px -1px 1px rgba(0 0 0 / 8%);
+  }
+}
+
+.remove-favorite {
+  cursor: pointer;
+  flex: 0 0 auto;
 }

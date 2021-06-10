@@ -1,5 +1,9 @@
-import { fetchRankedSongs, getLastUpdate, BASE_URL } from './scoresaber';
-import { readStorage, writeStorage } from './storage';
+import {
+  // fetchRankedSongs,
+  getLastUpdate,
+  BASE_URL
+} from './scoresaber';
+import { readStorage, removeFavorite, writeStorage } from './storage';
 
 async function setUserID() {
   const user = await readStorage('user');
@@ -11,9 +15,9 @@ async function setUserID() {
   const input = document.getElementById('user-id');
   const a = document.getElementById('user-name');
   a.textContent = user.name;
-  a.setAttribute('href',`${BASE_URL}/u/${user.id}`);
+  a.setAttribute('href',`${BASE_URL}u/${user.id}`);
   document.getElementById('avatar').src = user.avatar;
-  document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
+  document.getElementById('country-flag').src = `${BASE_URL}imports/images/flags/${user.country}.png`;
   input.value = user.id;
   locked = user.locked;
   if ( !locked ) input.nextSibling.click();
@@ -43,7 +47,11 @@ async function updateRankList(e) {
   const button = e.currentTarget;
   button.disabled = true;
   try {
-    await fetchRankedSongs({difference:true});
+    // await fetchRankedSongs({difference:true});
+    await new Promise( resolve => {
+      chrome.runtime.sendMessage({getRanked: {difference:true}},resolve);
+    });
+    await setLastUpdate();
   } catch(e) {
     console.error(e);
     button.parentNode.querySelector('.error').textContent = 'Failed to update. Retry later.';
@@ -85,8 +93,19 @@ async function initFavorite() {
     const a = li.querySelector('.favorite-player-name');
     a.textContent = fav.name;
     a.setAttribute('href',`${BASE_URL}/u/${fav.id}`);
+    const button = li.querySelector('.remove-favorite');
+    button.addEventListener('click', onClickRemoveFavorite);
+    button.dataset.id = fav.id;
     ul.appendChild(li);
   }
+  if ( favorites.length ) ul.nextSibling.classList.add('hidden');
+}
+
+/** @param {MouseEvent} e */
+async function onClickRemoveFavorite(e) {
+  const button = e.currentTarget;
+  await removeFavorite( button.dataset.id );
+  button.closest('li').remove();
 }
 
 window.addEventListener('load',()=>{
