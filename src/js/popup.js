@@ -1,23 +1,22 @@
-import { fetchRankedSongs, getLastUpdate } from './scoresaber';
+import { fetchRankedSongs, getLastUpdate, BASE_URL } from './scoresaber';
+import { readStorage, writeStorage } from './storage';
 
-function setUserID() {
-  chrome.storage.local.get([
-    'user'
-  ],({user})=>{
-    if ( !user ) {
-      document.getElementById('player-info').classList.add('hidden');
-      return;
-    }
-    /** @type {HTMLInputElement} */
-    const input = document.getElementById('user-id');
-    const a = document.getElementById('user-name');
-    a.textContent = user.name;
-    a.setAttribute('href',`https://scoresaber.com/u/${user.id}`);
-    document.getElementById('avatar').src = user.avatar;
-    document.getElementById('country-flag').src = `https://scoresaber.com/imports/images/flags/${user.country}.png`;
-    input.value = user.id;
-    if ( !locked ) input.nextSibling.click();
-  });
+async function setUserID() {
+  const user = await readStorage('user');
+  if ( !user ) {
+    document.getElementById('player-info').classList.add('hidden');
+    return;
+  }
+  /** @type {HTMLInputElement} */
+  const input = document.getElementById('user-id');
+  const a = document.getElementById('user-name');
+  a.textContent = user.name;
+  a.setAttribute('href',`${BASE_URL}/u/${user.id}`);
+  document.getElementById('avatar').src = user.avatar;
+  document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
+  input.value = user.id;
+  locked = user.locked;
+  if ( !locked ) input.nextSibling.click();
 }
 
 let locked = false;
@@ -29,6 +28,7 @@ function toggleLock(e) {
   const i = button.querySelector('i');
   i.className = 'fas ' + (locked?'fa-lock':'fa-lock-open');
   const input = button.previousSibling;
+  writeStorage('user.locked',locked);
   input.disabled = locked;
 }
 

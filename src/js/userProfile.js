@@ -1,5 +1,6 @@
 import {addOperation} from './util.js';
 import {getSongStars, loadRankedSongs} from './scoresaber';
+import { readStorage } from './storage.js';
 
 function getUserName() {
   const title = document.getElementsByTagName('title')[0];
@@ -32,7 +33,8 @@ function changeSongRankingLink(tr) {
   a.setAttribute('href',`${href}#:~:text=${highlight},${pp}`);
 }
 
-function addButtonSetPlayer() {
+async function addButtonSetPlayer() {
+  const locked = (await readStorage('user'))?.locked;
   const title = document.querySelector('.title a');
   title.insertAdjacentHTML('afterend',`
   <i
@@ -40,6 +42,7 @@ function addButtonSetPlayer() {
     class="far fa-id-badge"
     role="button"
     title="Set to My Account."
+    ${locked?'hidden':''}
   ></i>
   `);
   title.nextElementSibling.addEventListener('click',setMyAccount);
@@ -59,7 +62,8 @@ function setMyAccount(e) {
     id: location.pathname.match(/\d+/)[0],
     name: getUserName(),
     avatar: document.querySelector('.avatar > img').src,
-    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0]
+    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
+    locked: true,
   }
   chrome.storage.local.set({user});
   e.target.closest('h5').classList.add('my-account');

@@ -1,8 +1,11 @@
 /**
  * @typedef {import('./types/scoresaber').ScoreSaber.Schema} Schema
  */
+import {readStorage} from './storage';
 
-const RANK_URL = (limit,page) => `https://scoresaber.com/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
+export const BASE_URL = 'https://scoresaber.com/';
+
+const RANK_URL = (limit,page) => `${BASE_URL}api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
 let rank = {};
 
 export async function fetchRankedSongs({difference=false}={}) {
@@ -39,13 +42,6 @@ export async function fetchRankedSongs({difference=false}={}) {
   });
 }
 
-function readStorage(key) {
-  return new Promise( resolve => {
-    chrome.storage.local.get(key, items => {
-      resolve(items[key]);
-    });
-  });
-}
 
 export function getLastUpdate() {
   return readStorage('lastUpdate');
