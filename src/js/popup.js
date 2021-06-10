@@ -15,9 +15,9 @@ async function setUserID() {
   const input = document.getElementById('user-id');
   const a = document.getElementById('user-name');
   a.textContent = user.name;
-  a.setAttribute('href',`${BASE_URL}u/${user.id}`);
+  a.setAttribute('href',`${BASE_URL}/u/${user.id}`);
   document.getElementById('avatar').src = user.avatar;
-  document.getElementById('country-flag').src = `${BASE_URL}imports/images/flags/${user.country}.png`;
+  document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
   input.value = user.id;
   locked = user.locked;
   if ( !locked ) input.nextSibling.click();

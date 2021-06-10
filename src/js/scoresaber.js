@@ -3,9 +3,9 @@
  */
 import {readStorage} from './storage';
 
-export const BASE_URL = 'https://scoresaber.com/';
+export const BASE_URL = 'https://scoresaber.com';
 
-const RANK_URL = (limit,page) => `${BASE_URL}api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
+const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
 let rank = {};
 
 export async function fetchRankedSongs({difference=false}={}) {
