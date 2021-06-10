@@ -43,10 +43,24 @@ async function updateRankList(e) {
   const button = e.currentTarget;
   button.disabled = true;
   try {
-    await fetchRankedSongs();
+    await fetchRankedSongs({difference:true});
+  } catch(e) {
+    console.error(e);
+    button.parentNode.querySelector('.error').textContent = 'Failed to update. Retry later.';
   } finally {
     button.disabled = false;
   }
+}
+
+/** @param {MouseEvent} e */
+async function deleteStorageData(e) {
+  e.currentTarget.disabled = true;
+  await new Promise(resolve=>{
+    chrome.storage.local.clear(()=>{
+      resolve();
+    });
+  });
+  document.getElementById('deletion-state').textContent = 'Succeed to delete extension data.';
 }
 
 window.addEventListener('load',()=>{
@@ -54,4 +68,5 @@ window.addEventListener('load',()=>{
   setUserID();
   setLastUpdate();
   document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
+  document.getElementById('clear-all-data').addEventListener('click',deleteStorageData);
 });

@@ -45,6 +45,10 @@ button {
   display: none;
 }
 
+.hint:empty {
+  display: none;
+}
+
 .error {
   color: red;
 }

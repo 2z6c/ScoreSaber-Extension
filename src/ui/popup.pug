@@ -32,12 +32,16 @@ html(lang="en")
         )
         button#lock-user-id
           i.fas.fa-lock-open
-      span#error-user-id.error.hidden
+      span.hint#error-user-id.error
     section#ranked-data-section 
       h2 Ranked Map Data
       button#update-ranked-songs
         i.fas.fa-sync
-      span.error.hidden
+      span.hint.error
       span Last Update: 
-        b#last-update-date 
+        b#last-update-date
+    section 
+      h2 Extension Stored Data 
+      button#clear-all-data Delete All Data
+      span.hint#deletion-state
     script(src="/js/popup.js") 

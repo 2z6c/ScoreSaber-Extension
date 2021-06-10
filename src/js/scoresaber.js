@@ -2,29 +2,37 @@
  * @typedef {import('./types/scoresaber').ScoreSaber.Schema} Schema
  */
 
-const LIMIT = 1000;
-const RANK_URL = `https://scoresaber.com/api.php?function=get-leaderboards&limit=${LIMIT}&ranked=1&page=`
+const RANK_URL = (limit,page) => `https://scoresaber.com/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
 let rank = {};
 
-export async function fetchRankedSongs() {
+export async function fetchRankedSongs({difference=false}={}) {
+  const limit = difference ? 50 : 1000;
+  let s = 0, d = 0;
+  if ( !difference ) rank = {};
   for ( let i = 1;; i++ ) {
     console.log('fetch scoresaber ranked data. page ',i);
     try {
-      const res = await fetch(RANK_URL + i);
+      const res = await fetch(RANK_URL(limit,i));
       /** @type {Schema} */
       const data = await res.json();
       if ( data.songs.length === 0 ) break;
       for ( const {id,diff,stars} of data.songs ) {
-        if ( !rank[id] ) rank[id] = {}
-        rank[id][extructDifficulty(diff)] = stars;
+        if ( !rank[id] ) {
+          rank[id] = {};
+          s++;
+        }
+        const diffKey = extructDifficulty(diff);
+        if ( rank[id][diffKey] ) return;
+        rank[id][diffKey] = stars;
+        d++;
       }
-      await new Promise(r=>setTimeout(r, i * 3000));
+      await new Promise(r=>setTimeout(r, 3000));
     } catch(e) {
       console.error(e);
       break;
     }
   }
-  console.log('fetch end.');
+  console.log(`${s.toLocaleString()} maps (${d.toLocaleString()} difficulties) are updated.`);
   chrome.storage.local.set({
     rank,
     lastUpdate: Date.now(),
