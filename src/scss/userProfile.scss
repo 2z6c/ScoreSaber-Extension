@@ -42,3 +42,35 @@ th.song > div > :not(:last-child) {
   font-size: .9rem;
   margin-right: 4px;
 }
+
+.accuracy-rank-badge {
+  font-size: .8rem;
+  font-weight: 600;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid #222;
+  width: 28px;
+  height: 16px;
+  font-style: normal;
+  color: #000;
+  margin-right: 4px;
+  box-shadow: -1px -1px 1px rgb(0 0 0 / 20%) inset, 1px 1px 1px rgb(255 255 255 / 30%) inset;
+}
+
+.rank-SSS{
+  background: purple;
+  color: #fff;
+}
+.rank-SS{ background: gold; }
+.rank-S { background: silver; }
+.rank-A { background: cyan; }
+.rank-B { background: lime; }
+.rank-C { background: yellow; }
+.rank-D { background: pink; }
+.rank-E {
+  background: #222;
+  color: #fff;
+}

@@ -132,15 +132,24 @@ function moveMapper(tr) {
   title.insertAdjacentHTML('afterend','<br>');
 }
 
-// eslint-disable-next-line no-unused-vars
-function addScoreBar(){
-  const percentage = document.querySelectorAll('.ranking tbody .scoreBottom');
-  for ( const p of percentage ) {
-    const text = p.textContent.match(/\d+\.?\d*%/)[0];
-    if ( !text ) continue;
-    const td = p.closest('th');
-    td.insertAdjacentHTML('afterbegin',`<div class="parcentage-bar" style="width:${text}"></div>`);
-  }
+function addAccracyRank(tr){
+  const acc = tr.querySelector('.scoreBottom');
+  const value = parseFloat(acc.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
+  if ( !value ) return;
+  acc.textContent = `${value.toFixed(2)}%`;
+  // const td = acc.closest('th');
+  // td.insertAdjacentHTML('afterbegin',`<div class="parcentage-bar" style="width:${value}%"></div>`);
+  let rating = 'E';
+  if ( value === 100.0 ) rating = 'SSS';
+  else if ( value >= 90.0 ) rating = 'SS';
+  else if ( value >= 65.0 ) rating = 'A';
+  else if ( value >= 50.0 ) rating = 'B';
+  else if ( value >= 35.0 ) rating = 'C';
+  else if ( value >= 20.0 ) rating = 'D';
+  acc.insertAdjacentHTML('afterbegin',`
+  <i
+    class="accuracy-rank-badge rank-${rating}"
+  >${rating}</i>`);
 }
 
 const makeDifficultyLabel = (text,color,star) => `
@@ -170,12 +179,13 @@ function arrangeScoreTable() {
     dif.remove();
     shortenTimestamp(tr[i]);
     moveMapper(tr[i]);
+    addAccracyRank(tr[i]);
     //DLリンク追加
     addOperation(tr[i],hash);
   }
 }
 
-window.addEventListener('load',async ()=>{
+async function init() {
   await loadRankedSongs();
   checkMyAccount();
   changeRankingLink('a[href="/global"]');
@@ -187,4 +197,10 @@ window.addEventListener('load',async ()=>{
   addButtonSetPlayer();
   addButtonExpandChart();
   arrangeScoreTable();
-});
+}
+
+if ( document.readyState === 'loading' ) {
+  document.addEventListener('DOMContentLoaded',init);
+} else {
+  init();
+}
