@@ -1,6 +1,6 @@
 import {addOperation} from './util.js';
 import {getSongStars, loadRankedSongs} from './scoresaber';
-import { readStorage } from './storage.js';
+import { pushStorage, readStorage } from './storage.js';
 
 function getUserName() {
   const title = document.getElementsByTagName('title')[0];
@@ -38,6 +38,15 @@ async function addButtonSetPlayer() {
   const title = document.querySelector('.title a');
   title.insertAdjacentHTML('afterend',`
   <i
+    id="button-add-favorite"
+    class="far fa-heart"
+    role="button"
+    title="Add my favorite."
+  ></i>
+  `);
+  title.nextElementSibling.addEventListener('click',addFavorite);
+  title.insertAdjacentHTML('afterend',`
+  <i
     id="button-set-my-account"
     class="far fa-id-badge"
     role="button"
@@ -67,6 +76,15 @@ function setMyAccount(e) {
   }
   chrome.storage.local.set({user});
   e.target.closest('h5').classList.add('my-account');
+}
+
+function addFavorite() {
+  pushStorage('favorite',{
+    id: location.pathname.match(/\d+/)[0],
+    name: getUserName(),
+    avatar: document.querySelector('.avatar > img').src,
+    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
+  });
 }
 
 function unsetMyAccount(e) {

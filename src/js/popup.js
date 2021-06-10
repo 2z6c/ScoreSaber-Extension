@@ -1,6 +1,5 @@
 import { fetchRankedSongs, getLastUpdate, BASE_URL } from './scoresaber';
 import { readStorage, writeStorage } from './storage';
-import { openLink } from './popup/util';
 
 async function setUserID() {
   const user = await readStorage('user');
@@ -13,7 +12,6 @@ async function setUserID() {
   const a = document.getElementById('user-name');
   a.textContent = user.name;
   a.setAttribute('href',`${BASE_URL}/u/${user.id}`);
-  a.addEventListener('click',openLink);
   document.getElementById('avatar').src = user.avatar;
   document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
   input.value = user.id;
@@ -75,6 +73,22 @@ async function deleteStorageData(e) {
   document.getElementById('deletion-state').textContent = 'Succeed to delete extension data.';
 }
 
+async function initFavorite() {
+  const favorites = await readStorage('favorite');
+  if ( !favorites ) return;
+  console.log(favorites);
+  const ul = document.getElementById('favorite-player-list');
+  const tmp = document.getElementById('favorite-item-template').content;
+  for ( const fav of favorites ) {
+    const li = tmp.cloneNode(true);
+    li.querySelector('.favorite-player-avator').src = fav.avatar;
+    const a = li.querySelector('.favorite-player-name');
+    a.textContent = fav.name;
+    a.setAttribute('href',`${BASE_URL}/u/${fav.id}`);
+    ul.appendChild(li);
+  }
+}
+
 window.addEventListener('load',()=>{
   document.getElementById('lock-user-id').addEventListener('click',toggleLock);
   setUserID();
@@ -84,4 +98,5 @@ window.addEventListener('load',()=>{
   document.querySelectorAll('.tab').forEach(el=>{
     el.addEventListener('click',changeTab);
   });
+  initFavorite();
 });

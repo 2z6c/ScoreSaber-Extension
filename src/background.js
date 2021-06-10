@@ -1,4 +1,5 @@
 import { getLastUpdate, loadRankedSongs,fetchRankedSongs } from './js/scoresaber';
+import { writeStorage } from './js/storage';
 
 chrome.runtime.onInstalled.addListener(async ()=>{
   console.log('installed');
@@ -9,4 +10,6 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   loadRankedSongs().then(r=>{
     console.log(r);
   });
+  writeStorage('favorite', []);
+  writeStorage('bookmark', []);
 });

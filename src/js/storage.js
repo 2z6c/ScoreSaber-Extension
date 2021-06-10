@@ -29,3 +29,10 @@ export async function writeStorage( key, value ) {
   }
   return new Promise( resolve => STORAGE.set({[k]:obj}, resolve ));
 }
+
+export async function pushStorage( key, value ) {
+  const list = await readStorage( key );
+  if ( !(list instanceof Array) ) throw new Error(`${key} is not array.`);
+  list.push(value);
+  return writeStorage(key,list);
+}
