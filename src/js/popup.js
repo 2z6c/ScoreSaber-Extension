@@ -1,5 +1,6 @@
 import { fetchRankedSongs, getLastUpdate, BASE_URL } from './scoresaber';
 import { readStorage, writeStorage } from './storage';
+import { openLink } from './popup/util';
 
 async function setUserID() {
   const user = await readStorage('user');
@@ -12,6 +13,7 @@ async function setUserID() {
   const a = document.getElementById('user-name');
   a.textContent = user.name;
   a.setAttribute('href',`${BASE_URL}/u/${user.id}`);
+  a.addEventListener('click',openLink);
   document.getElementById('avatar').src = user.avatar;
   document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
   input.value = user.id;
@@ -53,6 +55,16 @@ async function updateRankList(e) {
 }
 
 /** @param {MouseEvent} e */
+function changeTab(e) {
+  document.querySelectorAll('.active').forEach(el=>{
+    el.classList.remove('active');
+  });
+  const tab = e.currentTarget;
+  tab.classList.add('active');
+  document.getElementById(tab.title).classList.add('active');
+}
+
+/** @param {MouseEvent} e */
 async function deleteStorageData(e) {
   e.currentTarget.disabled = true;
   await new Promise(resolve=>{
@@ -69,4 +81,7 @@ window.addEventListener('load',()=>{
   setLastUpdate();
   document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
   document.getElementById('clear-all-data').addEventListener('click',deleteStorageData);
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.addEventListener('click',changeTab);
+  });
 });

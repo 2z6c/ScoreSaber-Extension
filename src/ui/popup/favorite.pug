@@ -1,0 +1,13 @@
+article#Favorite
+  h2 Favorite
+  section 
+    ul#favorite-player-list
+    span.hint No Favorite Player.
+template#favorite-item-template 
+  li.favorite-item 
+    img.favorite-player-avator
+    a.favorite-player-name
+    i.fas.fa-user-minus.remove-favorite(
+      title="Remove from favorite"
+      role="button"
+    )

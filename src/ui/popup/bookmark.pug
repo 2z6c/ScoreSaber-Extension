@@ -1,0 +1,14 @@
+article#Bookmark
+  h2 Bookmark
+  section 
+    ul#bookmark-song-list
+    span.hint No Bookmark.
+    button#download-as-playlist(disabled) DL Playlist
+template#bookmark-item-template 
+  li.bookmark-item 
+    img.song-cover
+    a.song-title
+    i.fas.fa-trash.remove-bookmark(
+      title="Remove from bookmark"
+      role="button"
+    )

@@ -16,32 +16,23 @@ html(lang="en")
       href="popup.css"
     )
   body
-    h1 
-      img(src="icons/16x16.png")
-      | Score Saber Extension
-    section#user-id-section
-      h2 My Account
-      #player-info.form-row
-        img#avatar
-        a#user-name
-        img#country-flag
-      .form-row
-        input#user-id(
-          type="text"
-          placeholder="Player ID is empty."
-        )
-        button#lock-user-id
-          i.fas.fa-lock-open
-      span.hint#error-user-id.error
-    section#ranked-data-section 
-      h2 Ranked Map Data
-      button#update-ranked-songs
-        i.fas.fa-sync
-      span.hint.error
-      span Last Update: 
-        b#last-update-date
-    section 
-      h2 Extension Stored Data 
-      button#clear-all-data Delete All Data
-      span.hint#deletion-state
+    header
+      h1 
+        img(src="icons/16x16.png")
+        | Score Saber Extension
+      nav
+        .tab(title="Favorite")
+          i.far.fa-heart
+        .tab(title="Bookmark")
+          i.far.fa-bookmark
+        .tab(title="About")
+          i.fas.fa-info-circle
+        .tab.active(title="Settings")
+          i.fas.fa-cog
+    main
+      include popup/favorite.pug
+      include popup/bookmark.pug
+      article#About
+        h2 About
+      include popup/settings.pug
     script(src="/js/popup.js") 

@@ -1,0 +1,27 @@
+article#Settings.active
+  h2 Settings
+  section#user-id-section
+    h3 My Account
+    #player-info.form-row
+      img#avatar
+      a#user-name
+      img#country-flag
+    .form-row
+      input#user-id(
+        type="text"
+        placeholder="Player ID is empty."
+      )
+      button#lock-user-id
+        i.fas.fa-lock-open
+    span.hint#error-user-id.error
+  section#ranked-data-section 
+    h3 Ranked Map Data
+    button#update-ranked-songs
+      i.fas.fa-sync
+    span.hint.error
+    span Last Update: 
+      b#last-update-date
+  section
+    h3 Extension Stored Data 
+    button#clear-all-data Delete All Data
+    span.hint#deletion-state
