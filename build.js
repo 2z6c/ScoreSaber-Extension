@@ -6,6 +6,7 @@ esbuild.build({
     'src/js/header.js',
     'src/js/songPage.js',
     'src/js/popup.js',
+    'src/js/leaderboard.js',
     'src/background.js'
   ],
   bundle: true,

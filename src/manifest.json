@@ -7,13 +7,15 @@
       "matches": ["https://scoresaber.com/u/*"],
       "js": ["js/userProfile.js"],
       "css": ["userProfile.css"]
-    },
-    {
+    }, {
       "matches": ["https://scoresaber.com/leaderboard/*"],
       "js": ["js/songPage.js"],
       "css": ["songPage.css"]
-    },
-    {
+    }, {
+      "matches": ["https://scoresaber.com/","https://scoresaber.com/?*"],
+      "js": ["js/leaderboard.js"],
+      "css": ["leaderboard.css"]
+    }, {
       "matches": ["https://scoresaber.com/*"],
       "exclude_matches": ["*://*/api*"],
       "js": ["js/header.js"],

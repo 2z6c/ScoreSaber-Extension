@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:js": "node build.js",
-    "compile:sass": "sass src/scss/header.scss:dist/header.css src/scss/songPage.scss:dist/songPage.css src/scss/userProfile.scss:dist/userProfile.css src/scss/popup.scss:dist/popup.css",
+    "compile:sass": "sass src/scss/header.scss:dist/header.css src/scss/songPage.scss:dist/songPage.css src/scss/userProfile.scss:dist/userProfile.css src/scss/popup.scss:dist/popup.css src/scss/leaderboard.scss:dist/leaderboard.css",
     "compile:pug": "pug src/ui/popup.pug -o dist/",
     "build": "npm run build:js & npm run compile:sass & npm run compile:pug"
   },
