@@ -62,14 +62,20 @@ function modifySearchForm() {
   const button = form.querySelector('button[type="submit"]');
   button.textContent = '';
   button.insertAdjacentHTML('beforeend','<i class="fas fa-search"></i>');
-  searchMode = (form.getAttribute('action') === '/global')|0;
+  const action = form.getAttribute('action');
+  if ( action ) SEARCH_MODE[1].action = action;
+  searchMode = (!!action)|0;
   button.parentNode.insertAdjacentHTML('beforebegin',makeSearchSwitcher(SEARCH_MODE[searchMode]));
   const toggle = form.querySelector('i');
   toggle.addEventListener('click',toggleSearchMode);
 }
 
-window.addEventListener('load',()=>{
+function init() {
   addUserIcon();
   modifySearchForm();
   overwriteHeader();
-});
+}
+
+if ( document.readyState === 'loading' ) {
+  document.addEventListener('DOMContentLoaded',init);
+} else init();
