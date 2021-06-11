@@ -22,8 +22,28 @@ i[role="button"] {
   display: none;
 }
 
-th.song > div > :not(:last-child) {
-  flex: 0 0 auto;
+th.song > div {
+  > :not(:last-child) {
+    flex: 0 0 auto;
+  }
+  > :last-child {
+    display: flex;
+    flex: 1 1 auto;
+    flex-flow: column nowrap;
+    > :last-child {
+      display: flex;
+      flex-flow: nowrap;
+      justify-content: space-between;
+      .time {
+        font-weight: normal;
+      }
+    }
+  }
+}
+
+.action i {
+  font-size: 1.2rem;
+  margin: 4px;
 }
 
 .difficulty-label {
@@ -73,4 +93,9 @@ th.song > div > :not(:last-child) {
 .rank-E {
   background: #222;
   color: #fff;
+}
+
+tbody tr:hover {
+  background:rgba(255 255 0 / 10%);
+  transition: background .5s;
 }

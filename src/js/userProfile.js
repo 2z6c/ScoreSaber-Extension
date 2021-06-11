@@ -1,4 +1,4 @@
-import {addOperation, shortenTimestamp} from './util.js';
+import {addAction} from './util.js';
 import {getSongStars, loadRankedSongs} from './integration/scoresaber';
 import { pushStorage, readStorage } from './storage.js';
 
@@ -133,30 +133,23 @@ function expandChart(e) {
   else i.classList.replace('fa-compress','fa-expand');
 }
 
-/** 
- * @param {HTMLTableRowElement} tr
- */
-function modifyTimestamp(tr){
-  const d = tr.querySelector(`.time`);
-  const td = document.createElement('td');
-  td.textContent = shortenTimestamp(d.textContent);
-  td.title = d.title;
-  tr.insertAdjacentElement('beforeend',td);
-  d.remove();
-}
-
 /**
  * @param {HTMLTableRowElement} tr 
  */
 function moveMapper(tr) {
   const mapper = tr.querySelector('.mapper');
   const title = tr.querySelector('a');
+  tr.querySelector('br').remove();
   const a = document.createElement('a');
   a.insertAdjacentHTML('afterbegin','<i class="fas fa-user-edit mapper-icon" title="Mapper"></i>')
   a.appendChild(mapper);
   a.setAttribute('href',`/?search=${encodeURIComponent(mapper.textContent.trim())}`);
-  title.insertAdjacentElement('afterend',a);
-  title.insertAdjacentHTML('afterend','<br>');
+  const div = document.createElement('div');
+  div.appendChild(a);
+  title.insertAdjacentElement('afterend',div);
+
+  const d = tr.querySelector(`.time`);
+  div.appendChild(d);
 }
 
 function addAccracyRank(tr){
@@ -190,26 +183,20 @@ const makeDifficultyLabel = (text,color,star) => `
 
 function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
-  //ヘッダ追加
-  // const songhead = tr[0].querySelector('.Song');
-  // songhead.insertAdjacentHTML('beforebegin','<th>Difficulty</th>');
-  tr[0].insertAdjacentHTML('beforeend','<th>Date</th>');
-  tr[0].insertAdjacentHTML('beforeend','<th>Op.</th>');
-  //各行の処理
+  // tr[0].insertAdjacentHTML('beforeend','<th>Date</th>');
+  tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
 
-    //難易度移動
     const dif = tr[i].querySelector('span[style^="color"]');
     const diffText = dif.textContent.trim();
     const star = getSongStars(hash,diffText);
     dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
     dif.remove();
-    modifyTimestamp(tr[i]);
+    // modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
     addAccracyRank(tr[i]);
-    //DLリンク追加
-    addOperation(tr[i],hash);
+    addAction(tr[i],hash);
   }
 }
 

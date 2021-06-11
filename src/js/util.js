@@ -9,9 +9,9 @@ export const makeDLLink = (hash) => `
   data-hash="${hash}"
 ></i>`;
 
-export function addOperation(tr,hash){
+export function addAction(tr,hash){
   const td = document.createElement('td');
-  // const hash = tr.querySelector('img').src.match(/[0-9A-F]{40}/)[0];
+  td.classList.add('action');
   tr.appendChild(td);
   td.insertAdjacentHTML('beforeend',makeDLLink(hash));
   td.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);
