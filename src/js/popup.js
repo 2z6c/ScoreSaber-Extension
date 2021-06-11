@@ -5,7 +5,7 @@ import {
 } from './integration/scoresaber';
 import { KEY_BOOKMARK, readStorage, removeBookmark, removeFavorite, writeStorage } from './storage';
 
-async function setUserID() {
+async function setUser() {
   const user = await readStorage('user');
   if ( !user ) {
     document.getElementById('player-info').classList.add('hidden');
@@ -19,8 +19,12 @@ async function setUserID() {
   document.getElementById('avatar').src = user.avatar;
   document.getElementById('country-flag').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
   input.value = user.id;
-  locked = user.locked;
-  if ( !locked ) input.nextSibling.click();
+  input.disabled = locked = user.locked;
+  if ( locked ) {
+    const lock = input.nextSibling;
+    lock.title = 'Unlock';
+    lock.querySelector('i').className = 'fas fa-lock';
+  } 
 }
 
 let locked = false;
@@ -186,7 +190,7 @@ async function getExtensionImage() {
 
 window.addEventListener('load',()=>{
   document.getElementById('lock-user-id').addEventListener('click',toggleLock);
-  setUserID();
+  setUser();
   setLastUpdate();
   document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
   document.getElementById('clear-all-data').addEventListener('click',deleteStorageData);
