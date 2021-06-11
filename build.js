@@ -7,6 +7,7 @@ esbuild.build({
     'src/js/songPage.js',
     'src/js/popup.js',
     'src/js/leaderboard.js',
+    'src/js/rankingRequest.js',
     'src/background.js'
   ],
   bundle: true,

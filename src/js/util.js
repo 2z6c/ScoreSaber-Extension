@@ -73,3 +73,15 @@ export async function oneClickInstall(e){
   window.open(`beatsaver://${key}`);
   // button.disabled = false;
 }
+
+/**
+ * 
+ * @param {string} timestamp 
+ * @returns {string}
+ */
+export function shortenTimestamp(timestamp){
+  let [v,u] = timestamp.trim().split(' ');
+  if ( u.startsWith('min') ) u = 'min';
+  else u = u[0];
+  return `${v}${u}`;
+}

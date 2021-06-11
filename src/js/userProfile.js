@@ -1,4 +1,4 @@
-import {addOperation} from './util.js';
+import {addOperation, shortenTimestamp} from './util.js';
 import {getSongStars, loadRankedSongs} from './integration/scoresaber';
 import { pushStorage, readStorage } from './storage.js';
 
@@ -136,13 +136,10 @@ function expandChart(e) {
 /** 
  * @param {HTMLTableRowElement} tr
  */
-function shortenTimestamp(tr){
+function modifyTimestamp(tr){
   const d = tr.querySelector(`.time`);
-  let [v,u] = d.textContent.trim().split(' ');
-  if ( u.startsWith('min') ) u = 'min';
-  else u = u[0];
   const td = document.createElement('td');
-  td.textContent = `${v}${u}`;
+  td.textContent = shortenTimestamp(d.textContent);
   td.title = d.title;
   tr.insertAdjacentElement('beforeend',td);
   d.remove();
@@ -208,7 +205,7 @@ function arrangeScoreTable() {
     const star = getSongStars(hash,diffText);
     dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
     dif.remove();
-    shortenTimestamp(tr[i]);
+    modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
     addAccracyRank(tr[i]);
     //DLリンク追加
