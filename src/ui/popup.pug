@@ -26,7 +26,7 @@ html(lang="en")
         .tab(title="Bookmark")
           i.far.fa-bookmark
         .tab(title="About")
-          i.fas.fa-info-circle
+          i.fas.fa-info
         .tab.active(title="Settings")
           i.fas.fa-cog
     main
@@ -34,5 +34,8 @@ html(lang="en")
       include popup/bookmark.pug
       article#About
         h2 About
+        section 
+          h3 Score Saber
+          a(href="https://scoresaber.com" target="_blank") https://scoresaber.com
       include popup/settings.pug
     script(src="/js/popup.js") 

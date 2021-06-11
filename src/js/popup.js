@@ -82,6 +82,7 @@ async function deleteStorageData(e) {
 }
 
 async function initFavorite() {
+  /** @type {import('./storage').Favorite[]} */
   const favorites = await readStorage('favorite');
   if ( !favorites ) return;
   const ul = document.getElementById('favorite-player-list');
@@ -89,6 +90,7 @@ async function initFavorite() {
   for ( const fav of favorites ) {
     const li = tmp.cloneNode(true);
     li.querySelector('.favorite-player-avator').src = fav.avatar;
+    li.querySelector('.favorite-player-country').src = `${BASE_URL}/imports/images/flags/${fav.country}.png`;
     const a = li.querySelector('.favorite-player-name');
     a.textContent = fav.name;
     a.setAttribute('href',`${BASE_URL}/u/${fav.id}`);
@@ -113,7 +115,6 @@ async function initBookmark() {
   if ( !bookmarks ) return;
   const ul = document.getElementById('bookmark-song-list');
   const tmp = document.getElementById('bookmark-item-template').content;
-  let i = 0;
   for ( const bookmark of bookmarks ) {
     const li = tmp.cloneNode(true);
     li.querySelector('.song-cover').src = `${BASE_URL}/imports/images/songs/${bookmark.hash}.png`;
@@ -124,11 +125,10 @@ async function initBookmark() {
     button.addEventListener('click', handleBookmark);
     button.dataset.hash = bookmark.hash;
     ul.appendChild(li);
-    i++;
   }
   const buttonDL = document.getElementById('download-as-playlist');
   buttonDL.addEventListener('click',downloadPlaylist);
-  if ( i ) {
+  if ( ul.childElementCount > 0 ) {
     ul.nextSibling.classList.add('hidden');
     buttonDL.disabled = false;
   }
@@ -141,7 +141,7 @@ async function handleBookmark(e) {
   const ul = button.closest('ul');
   await removeBookmark( button.dataset.hash );
   button.closest('li').remove();
-  if ( ul.innerHTML === '' ) {
+  if ( ul.childElementCount === 0 ) {
     document.getElementById('download-as-playlist').disabled = true;
     ul.closest('section').querySelector('.hint').classList.remove('hidden');
   }
@@ -152,12 +152,11 @@ async function downloadPlaylist(e) {
   /** @type {HTMLButtonElement} */
   const button = e.currentTarget;
   button.disabled = true;
-  const songs = await readStorage(KEY_BOOKMARK);
   const playlist = {
     playlistTitle: 'ScoreSaber Bookmark',
     playlistAuthor: (await readStorage('user'))?.name || 'ScoreSaber-Extension',
     image: await getExtensionImage(),
-    songs,
+    songs: (await readStorage(KEY_BOOKMARK)).map(({hash})=>({hash})),
   };
   const blob = new Blob([JSON.stringify(playlist)]);
   const url = URL.createObjectURL(blob);
