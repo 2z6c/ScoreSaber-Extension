@@ -1,4 +1,4 @@
-import { getLastUpdate, loadRankedSongs,fetchRankedSongs } from './js/scoresaber';
+import { getLastUpdate, loadRankedSongs,fetchRankedSongs } from './js/integration/scoresaber';
 // import { writeStorage } from './js/storage';
 
 chrome.runtime.onInstalled.addListener(async ()=>{

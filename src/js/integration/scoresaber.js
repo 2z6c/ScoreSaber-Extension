@@ -1,7 +1,7 @@
 /**
- * @typedef {import('./types/scoresaber').ScoreSaber.Schema} Schema
+ * @typedef {import('../types/scoresaber').ScoreSaber.Schema} Schema
  */
-import {readStorage} from './storage';
+import {readStorage} from '../storage';
 
 export const BASE_URL = 'https://scoresaber.com';
 

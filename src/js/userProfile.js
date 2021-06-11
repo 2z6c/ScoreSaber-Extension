@@ -1,5 +1,5 @@
 import {addOperation} from './util.js';
-import {getSongStars, loadRankedSongs} from './scoresaber';
+import {getSongStars, loadRankedSongs} from './integration/scoresaber';
 import { pushStorage, readStorage } from './storage.js';
 
 const UID = location.pathname.match(/\d+/)[0];
