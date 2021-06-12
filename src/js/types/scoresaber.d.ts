@@ -17,4 +17,19 @@ export declare namespace ScoreSaber {
     stars: number;
     image: string;
   }
+
+  export type Player = {
+    playerInfo: {
+      playerId: string;
+      playerName: string;
+      avatar: string;
+      rank: number;
+      countryRank: number;
+      pp: number;
+      country: string;
+    };
+    error?: {
+      message: string;
+    }
+  }
 }

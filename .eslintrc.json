@@ -11,5 +11,5 @@
   "extends": [
     "eslint:recommended"
   ],
-  "ignorePatterns": ["build.js"]
+  "ignorePatterns": ["build.js","watch.js"]
 }

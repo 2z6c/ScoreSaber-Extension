@@ -40,6 +40,25 @@ function toggleLock(e) {
   input.disabled = locked;
 }
 
+/** @param {MouseEvent} e */
+async function onChangedUserID(e) {
+  /** @type {HTMLInputElement} */
+  const input = e.currentTarget;
+  if ( !/^\d+$/.test(input.value) ) return;
+  const res = await fetch(`https://new.scoresaber.com/api/player/${input.value}/full`);
+  /** @type {import('./types/scoresaber').ScoreSaber.Player} */
+  const data = await res.json();
+  if ( !data || data.error ) return;
+  await writeStorage('user', {
+    id: input.value,
+    name: data.playerInfo.playerName,
+    avatar: `https://new.scoresaber.com${data.playerInfo.avatar}`,
+    country: data.playerInfo.country.toLocaleLowerCase(),
+    locked: true,
+  });
+  setUser();
+}
+
 async function setLastUpdate() {
   const b = document.getElementById('last-update-date');
   b.textContent = new Date(await getLastUpdate()).toLocaleString();
@@ -199,6 +218,7 @@ async function getExtensionImage() {
 }
 
 window.addEventListener('load',()=>{
+  document.getElementById('user-id').addEventListener('change',onChangedUserID);
   document.getElementById('lock-user-id').addEventListener('click',toggleLock);
   setUser();
   setLastUpdate();

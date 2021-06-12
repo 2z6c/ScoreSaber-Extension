@@ -1,9 +1,4 @@
-i[role="button"] {
-  cursor: pointer;
-  &:hover {
-    color: #3273dc;
-  }
-}
+@import './common.scss';
 
 .button-chart-expand {
   position: absolute;

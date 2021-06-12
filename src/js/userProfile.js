@@ -42,17 +42,16 @@ async function addButtonSetPlayer() {
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-set-my-account"
-    class="far fa-id-badge"
+    class="far fa-id-badge ${locked?'hidden':''}"
     role="button"
     title="Set to My Account."
-    ${locked?'hidden':''}
   ></i>
   `);
   title.nextElementSibling.addEventListener('click',setMyAccount);
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-unset-my-account"
-    class="fas fa-id-badge"
+    class="fas fa-id-badge  ${locked?'hidden':''}"
     role="button"
     title="Unset My Account."
   ></i>

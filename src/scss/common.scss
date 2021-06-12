@@ -1,0 +1,10 @@
+i[role="button"] {
+  cursor: pointer;
+  &:hover {
+    color: #3273dc;
+  }
+}
+
+.hidden {
+  display: none!important;
+}
