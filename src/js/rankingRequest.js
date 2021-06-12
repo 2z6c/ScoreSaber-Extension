@@ -1,8 +1,17 @@
 import {
   addAction,
   extractHash,
-  shortenTimestamp
+  waitElement,
 } from './util';
+
+const observer = new IntersectionObserver( entries => {
+  for ( const entry of entries ) if ( entry.isIntersecting ) {
+    const el = entry.target;
+    const hash = extractHash( el.querySelector('img').src );
+    addAction( el, hash, el.querySelector('a').href );
+    observer.unobserve(el);
+  }
+})
 
 async function waitTable() {
   let head = document.querySelectorAll('.songs thead tr');
@@ -14,11 +23,6 @@ async function waitTable() {
   return head;
 }
 
-function modifyTimestamp(tr) {
-  const td = tr.querySelector('.created_at');
-  td.textContent = shortenTimestamp(td.textContent);
-}
-
 async function init() {
   const head = await waitTable();
   for ( let i = 0; i < head.length; i++ ) {
@@ -26,10 +30,8 @@ async function init() {
   }
   const tr = document.querySelectorAll('.songs tbody tr');
   for ( let i = 0; i < tr.length; i++ ) {
-    console.log(tr[i].innerHTML)
-    const hash = extractHash( tr[i].querySelector('img').src );
-    addAction( tr[i], hash, tr[i].querySelector('a').href );
-    modifyTimestamp(tr[i]);
+    await waitElement('img',tr[i]);
+    observer.observe( tr[i] );
   }
 }
 
