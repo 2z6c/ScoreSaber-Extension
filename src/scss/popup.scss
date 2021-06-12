@@ -1,3 +1,5 @@
+@import './common.scss';
+
 :root {
   font-size: 12px;
   width: 250px;
@@ -180,6 +182,7 @@ article {
   font-size: 1.2rem;
   padding: 4px 8px;
   border-radius: 4px;
+  cursor: pointer;
   &:hover {
     box-shadow: 2px 2px 4px rgba(0 0 0 / 15%), -1px -1px 1px rgba(0 0 0 / 8%);
   }

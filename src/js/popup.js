@@ -111,12 +111,13 @@ async function initFavorite() {
   const ul = document.getElementById('favorite-player-list');
   const tmp = document.getElementById('favorite-item-template').content;
   for ( const fav of favorites ) {
-    const li = tmp.cloneNode(true);
+    const li = tmp.cloneNode(true).firstElementChild;
     li.querySelector('.favorite-player-avator').src = fav.avatar;
     li.querySelector('.favorite-player-country').src = `${BASE_URL}/imports/images/flags/${fav.country}.png`;
     const a = li.querySelector('.favorite-player-name');
     a.textContent = fav.name;
-    a.setAttribute('href',`${BASE_URL}/u/${fav.id}`);
+    li.dataset.link = `${BASE_URL}/u/${fav.id}`;
+    li.addEventListener('click',openUserPage);
     const button = li.querySelector('.remove-favorite');
     button.addEventListener('click', onClickRemoveFavorite);
     button.dataset.id = fav.id;
@@ -126,7 +127,14 @@ async function initFavorite() {
 }
 
 /** @param {MouseEvent} e */
+function openUserPage(e) {
+  const link = e.currentTarget.dataset.link;
+  window.open( link, '_blank' );
+}
+
+/** @param {MouseEvent} e */
 async function onClickRemoveFavorite(e) {
+  e.stopPropagation();
   const button = e.currentTarget;
   await removeFavorite( button.dataset.id );
   button.closest('li').remove();
