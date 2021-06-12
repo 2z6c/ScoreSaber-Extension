@@ -3,7 +3,8 @@ The chrome extension that modify UI of scoresaber.com.
 It works with Chromium browsers (e.g. Google Chrome, Microsoft Edge).
 
 ## Install
-
+You can install it from following link.
+https://chrome.google.com/webstore/detail/score-saber-extension/hngcbgpmfminpejjechbpgjklecgmjao
 
 ## Features
 - Replace the links to rankings with the appropriate user ranks instead of the top rank.

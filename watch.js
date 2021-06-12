@@ -9,7 +9,6 @@ esbuild.build({
     'src/js/leaderboard.js',
     'src/js/rankingRequest.js',
     'src/background.js',
-    'src/manifest.json'
   ],
   bundle: true,
   outdir: 'dist',

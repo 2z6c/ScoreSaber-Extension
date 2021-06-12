@@ -13,10 +13,10 @@ esbuild.build({
   bundle: true,
   outdir: 'dist',
   define: {
-    'process.env.NODE_ENV': '"development"'
+    'process.env.NODE_ENV': '"production"'
   },
-  minify: false,
-  sourcemap: true,
+  minify: true,
+  sourcemap: false,
   target: ['chrome88'],
   watch,
 }).catch(()=>process.exit(1));
