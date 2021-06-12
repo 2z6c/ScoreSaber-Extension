@@ -1,6 +1,6 @@
 import {addAction} from './util.js';
 import {getSongStars, loadRankedSongs} from './integration/scoresaber';
-import { pushStorage, readStorage } from './storage.js';
+import { pushStorage, readStorage, removeFavorite } from './storage.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -83,16 +83,24 @@ async function addFavoriteButton(title) {
     title="Add my favorite."
   ></i>
   `);
-  title.nextElementSibling.addEventListener('click',addFavorite);
+  title.nextElementSibling.addEventListener('click',handleFavorite);
 }
 
-function addFavorite() {
-  pushStorage('favorite',{
-    id: UID,
-    name: getUserName(),
-    avatar: document.querySelector('.avatar > img').src,
-    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
-  });
+/** @param {MouseEvent} e */
+async function handleFavorite(e) {
+  const isFav = (await readStorage('favorite')).some(f=>f.id === UID);
+  if ( isFav ) {
+    await removeFavorite( UID );
+    e.target.classList.replace('fas','far');
+  } else {
+    await pushStorage('favorite',{
+      id: UID,
+      name: getUserName(),
+      avatar: document.querySelector('.avatar > img').src,
+      country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
+    });
+    e.target.classList.replace('far','fas');
+  }
 }
 
 function unsetMyAccount(e) {
@@ -183,7 +191,6 @@ const makeDifficultyLabel = (text,color,star) => `
 
 function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
-  // tr[0].insertAdjacentHTML('beforeend','<th>Date</th>');
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
@@ -196,7 +203,8 @@ function arrangeScoreTable() {
     // modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
     addAccracyRank(tr[i]);
-    addAction(tr[i],hash);
+    const link = tr[i].querySelector('a').href;
+    addAction(tr[i],hash,link);
   }
 }
 

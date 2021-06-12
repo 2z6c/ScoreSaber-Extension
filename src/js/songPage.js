@@ -1,16 +1,12 @@
-import {oneClickInstall} from './util';
-
-function makeDLButton() {
-  const i = document.createElement('i');
-  i.classList.add('fas','fa-cloud-download-alt','song-download-link');
-  i.addEventListener('click',oneClickInstall);
-  i.setAttribute('title','One-Click Install (with Mod Assistant)');
-  i.setAttribute('role','button');
-  return i;
-}
+import {
+  addBookmarkButton,
+  extractHash,
+  addSongDownloadButton
+} from './util';
 
 window.addEventListener('load',()=>{
-  // const meta = document.querySelector('[property$="image"][content]').content;
-  // [hash] = meta.match(/[0-9A-F]{40}/g);
-  document.querySelector('h4.is-5').append(makeDLButton());
+  const wrapper = document.querySelector('.column.is-one-quarter');
+  const hash = extractHash( wrapper.firstChild.src );
+  addSongDownloadButton(wrapper,hash);
+  addBookmarkButton(wrapper,hash,location.toString());
 });

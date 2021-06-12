@@ -20,7 +20,7 @@
       "run_at": "document_idle",
       "js": ["js/rankingRequest.js"]
     }, {
-      "matches": ["https://*.scoresaber.com/*"],
+      "matches": ["https://scoresaber.com/*"],
       "exclude_matches": ["*://*/api*"],
       "js": ["js/header.js"],
       "css": ["header.css"]

@@ -120,8 +120,10 @@ async function initBookmark() {
   const ul = document.getElementById('bookmark-song-list');
   const tmp = document.getElementById('bookmark-item-template').content;
   for ( const bookmark of bookmarks ) {
-    const li = tmp.cloneNode(true);
+    const li = tmp.cloneNode(true).firstElementChild;
     li.querySelector('.song-cover').src = `${BASE_URL}/imports/images/songs/${bookmark.hash}.png`;
+    li.dataset.link = bookmark.link;
+    li.addEventListener('click',openSongPage);
     const a = li.querySelector('.song-title');
     a.textContent = bookmark.title;
     // a.setAttribute('href',`${BASE_URL}/u/${bookmark.id}`);
@@ -138,8 +140,16 @@ async function initBookmark() {
   }
 }
 
+/** @param {MouseEvent} e */
+function openSongPage(e) {
+  let url = e.currentTarget.dataset.link;
+  if ( url[0] === '/' ) url = BASE_URL + url;
+  window.open( url, '_blank' );
+}
+
 /** @type {MouseEvent} e */
 async function handleBookmark(e) {
+  e.stopPropagation();
   const button = e.currentTarget;
   /** @type {HTMLUListElement} */
   const ul = button.closest('ul');

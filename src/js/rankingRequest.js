@@ -1,4 +1,8 @@
-import { addAction, shortenTimestamp } from './util';
+import {
+  addAction,
+  extractHash,
+  shortenTimestamp
+} from './util';
 
 async function waitTable() {
   let head = document.querySelectorAll('.songs thead tr');
@@ -23,8 +27,8 @@ async function init() {
   const tr = document.querySelectorAll('.songs tbody tr');
   for ( let i = 0; i < tr.length; i++ ) {
     console.log(tr[i].innerHTML)
-    const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
-    addAction( tr[i], hash );
+    const hash = extractHash( tr[i].querySelector('img').src );
+    addAction( tr[i], hash, tr[i].querySelector('a').href );
     modifyTimestamp(tr[i]);
   }
 }

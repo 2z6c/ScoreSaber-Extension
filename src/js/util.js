@@ -1,24 +1,27 @@
 import { getMapByHash } from './integration/beatsaver';
 import { pushStorage, readStorage, removeBookmark } from './storage';
 
-export const makeDLLink = (hash) => `
-<i
-  class="fas fa-cloud-download-alt oneclick-install"
-  role="button"
-  title="OneClick Install"
-  data-hash="${hash}"
-></i>`;
-
-export function addAction(tr,hash){
+export function addAction(tr,hash,link){
   const td = document.createElement('td');
   td.classList.add('action');
   tr.appendChild(td);
-  td.insertAdjacentHTML('beforeend',makeDLLink(hash));
-  td.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);
-  addBookmarkButton(td,hash);
+  addSongDownloadButton(td,hash);
+  addBookmarkButton(td,hash,link);
 }
 
-async function addBookmarkButton(parent,hash) {
+export async function addSongDownloadButton(parent,hash) {
+  parent.insertAdjacentHTML('beforeend',`
+  <i
+    class="fas fa-cloud-download-alt oneclick-install"
+    role="button"
+    title="OneClick Install"
+    data-hash="${hash}"
+  ></i>`);
+  parent.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);
+
+}
+
+export async function addBookmarkButton(parent,hash,link) {
   /** @type {import('./types/storage').Bookmark[]} */
   const bookmark = await readStorage('bookmark');
   const index = bookmark.findIndex(v=>v.hash===hash);
@@ -29,6 +32,7 @@ async function addBookmarkButton(parent,hash) {
     role="button"
     title="${isBookmarked?'Remove':'Add'} Bookmark"
     data-hash="${hash}"
+    data-link="${link.split(/[#?]/g)[0]}"
   ></i>`);
   parent.querySelector('.fa-bookmark').addEventListener('click',handleBookmark);
 }
@@ -50,7 +54,8 @@ async function handleBookmark(e) {
       title = map.metadata.songName;
       button.dataset.title = title;
     }
-    await pushStorage('bookmark',{hash,title});  
+    const link = button.dataset.link;
+    await pushStorage('bookmark',{hash,title,link});
     button.classList.replace('far','fas');
     button.title = 'Remove Bookmark';
   }
@@ -59,7 +64,7 @@ async function handleBookmark(e) {
 /**
  * @param {MouseEvent} e
  */
-export async function oneClickInstall(e){
+async function oneClickInstall(e){
   /** @type {HTMLElement} */
   const button = e.currentTarget;
   const hash = button.dataset.hash;
@@ -84,4 +89,18 @@ export function shortenTimestamp(timestamp){
   if ( u.startsWith('min') ) u = 'min';
   else u = u[0];
   return `${v}${u}`;
+}
+
+export function extractHash(text) {
+  return text.match(/[0-9a-fA-F]{40}/)[0];
+}
+
+export async function waitElement(selector,parent=document) {
+  let el = parent.querySelector(selector);
+  let loop = 100;
+  while ( !el && --loop > 0 ) {
+    await new Promise(r=>setTimeout(r,250));
+    el = parent.querySelector(selector);
+  }
+  return el;
 }
