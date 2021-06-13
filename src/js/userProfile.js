@@ -44,7 +44,7 @@ async function addButtonSetPlayer() {
     id="button-set-my-account"
     class="far fa-id-badge ${locked?'hidden':''}"
     role="button"
-    title="Set to My Account."
+    title="Set to My Profile."
   ></i>
   `);
   title.nextElementSibling.addEventListener('click',setMyAccount);
@@ -53,7 +53,7 @@ async function addButtonSetPlayer() {
     id="button-unset-my-account"
     class="fas fa-id-badge  ${locked?'hidden':''}"
     role="button"
-    title="Unset My Account."
+    title="Unset My Profile."
   ></i>
   `);
   title.nextElementSibling.addEventListener('click',unsetMyAccount);
