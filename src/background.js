@@ -19,7 +19,7 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
 });
 
-chrome.runtime.onMessage.addListener(async (request,sender,sendResponse)=>{
+async function asyncRespond(request,sender,sendResponse) {
   if ( request.getRanked ) {
     await loadRankedSongs();
     if ( !isBusy() ) await fetchRankedSongs(request.getRanked);
@@ -28,5 +28,11 @@ chrome.runtime.onMessage.addListener(async (request,sender,sendResponse)=>{
   else if ( request.isBusy ) {
     sendResponse({busy: isBusy()});
   }
+  else console.error('illegal request.', request);
+}
+
+chrome.runtime.onMessage.addListener((...args)=>{
+  asyncRespond(...args);
+  return true;
 });
 
