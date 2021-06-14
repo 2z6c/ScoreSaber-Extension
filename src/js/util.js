@@ -23,7 +23,7 @@ export async function addSongDownloadButton(parent,hash) {
 export async function addBookmarkButton(parent,hash,link) {
   /** @type {import('./types/storage').Bookmark[]} */
   const bookmark = await readStorage('bookmark');
-  const index = bookmark.findIndex(v=>v.hash===hash);
+  const index = bookmark?.findIndex(v=>v.hash===hash);
   const isBookmarked = index >= 0;
   parent.insertAdjacentHTML('beforeend',`
   <i
@@ -91,7 +91,7 @@ export function shortenTimestamp(timestamp){
 }
 
 export function extractHash(text) {
-  return text.match(/[0-9a-fA-F]{40}/)[0];
+  return text.match(/[0-9a-fA-F]{40}/)?.[0];
 }
 
 export async function waitElement(selector,parent=document) {

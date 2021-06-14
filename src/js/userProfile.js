@@ -73,7 +73,7 @@ function setMyAccount(e) {
 
 async function addFavoriteButton(title) {
   const fav = await readStorage('favorite');
-  const isFav = fav.some(f=>f.id === UID);
+  const isFav = fav?.some(f=>f.id === UID);
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-add-favorite"
@@ -87,7 +87,7 @@ async function addFavoriteButton(title) {
 
 /** @param {MouseEvent} e */
 async function handleFavorite(e) {
-  const isFav = (await readStorage('favorite')).some(f=>f.id === UID);
+  const isFav = (await readStorage('favorite'))?.some(f=>f.id === UID);
   if ( isFav ) {
     await removeFavorite( UID );
     e.target.classList.replace('fas','far');
