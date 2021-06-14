@@ -18,7 +18,6 @@ export async function addSongDownloadButton(parent,hash) {
     data-hash="${hash}"
   ></i>`);
   parent.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);
-
 }
 
 export async function addBookmarkButton(parent,hash,link) {
@@ -103,4 +102,10 @@ export async function waitElement(selector,parent=document) {
     el = parent.querySelector(selector);
   }
   return el;
+}
+
+export function postMessage(query) {
+  return new Promise( resolve => {
+    chrome.runtime.sendMessage( query, resolve );
+  });
 }

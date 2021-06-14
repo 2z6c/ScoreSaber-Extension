@@ -7,8 +7,13 @@ export const BASE_URL = 'https://scoresaber.com';
 
 const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
 let rank = {};
+let _loading = false;
+export function isBusy() {
+  return _loading;
+}
 
 export async function fetchRankedSongs({difference=false}={}) {
+  _loading = true;
   if ( Object.keys(rank).length === 0 ) difference = false;
   const limit = difference ? 50 : 1000;
   let s = 0, d = 0;
@@ -44,8 +49,8 @@ export async function fetchRankedSongs({difference=false}={}) {
     rank,
     lastUpdate: Date.now(),
   });
+  _loading = false;
 }
-
 
 export function getLastUpdate() {
   return readStorage('lastUpdate');

@@ -3,6 +3,7 @@ import {
   getLastUpdate,
   BASE_URL
 } from './integration/scoresaber';
+import { postMessage } from './util';
 import { KEY_BOOKMARK, readStorage, removeBookmark, removeFavorite, writeStorage } from './storage';
 
 async function setUser() {
@@ -61,7 +62,8 @@ async function onChangedUserID(e) {
 
 async function setLastUpdate() {
   const b = document.getElementById('last-update-date');
-  b.textContent = new Date(await getLastUpdate()).toLocaleString();
+  const text = await getLastUpdate(); 
+  b.textContent = text ? new Date(text).toLocaleString() : 'Now Loading...';
 }
 
 /** @param {MouseEvent} e */
@@ -70,10 +72,7 @@ async function updateRankList(e) {
   const button = e.currentTarget;
   button.disabled = true;
   try {
-    // await fetchRankedSongs({difference:true});
-    await new Promise( resolve => {
-      chrome.runtime.sendMessage({getRanked: {difference:true}},resolve);
-    });
+    await postMessage({getRanked: {difference:true}});
     await setLastUpdate();
   } catch(e) {
     console.error(e);
@@ -225,12 +224,28 @@ async function getExtensionImage() {
   return canvas.toDataURL('image/png');
 }
 
+async function setupUpdateRankedSongsButton() {
+  const button = document.getElementById('update-ranked-songs');
+  button.addEventListener('click', updateRankList);
+  let busy = await postMessage({isBusy:true});
+  if ( busy ) {
+    button.disabled = true;
+    let limit = 100;
+    while ( busy && --limit ) {
+      new Promise(r=>setTimeout(r,200));
+      busy = (await postMessage({isBusy:true}))?.busy;
+      console.log(busy);
+    }
+    button.disabled = false;
+  }
+  setLastUpdate();
+}
+
 window.addEventListener('load',()=>{
   document.getElementById('user-id').addEventListener('change',onChangedUserID);
   document.getElementById('lock-user-id').addEventListener('click',toggleLock);
   setUser();
-  setLastUpdate();
-  document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
+  setupUpdateRankedSongsButton();
   document.getElementById('clear-all-data').addEventListener('click',deleteStorageData);
   document.querySelectorAll('.tab').forEach(el=>{
     el.addEventListener('click',changeTab);
