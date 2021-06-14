@@ -15,8 +15,8 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   loadRankedSongs().then(r=>{
     console.log(r);
   });
-  if ( await readStorage(KEY_FAVORITE) ) await writeStorage(KEY_FAVORITE, []);
-  if ( await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
+  if ( !await readStorage(KEY_FAVORITE) ) await writeStorage(KEY_FAVORITE, []);
+  if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
 });
 
 chrome.runtime.onMessage.addListener(async (request,sender,sendResponse)=>{
