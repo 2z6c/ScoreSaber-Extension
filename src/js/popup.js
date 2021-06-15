@@ -45,11 +45,17 @@ function toggleLock(e) {
 async function onChangedUserID(e) {
   /** @type {HTMLInputElement} */
   const input = e.currentTarget;
-  if ( !/^\d+$/.test(input.value) ) return;
+  if ( !/^\d+$/.test(input.value) ) {
+    showHint( 'user-id-hint', 'Invalid user ID.', 'error' );
+    return;
+  }
   const res = await fetch(`https://new.scoresaber.com/api/player/${input.value}/full`);
   /** @type {import('./types/scoresaber').ScoreSaber.Player} */
   const data = await res.json();
-  if ( !data || data.error ) return;
+  if ( !data || data.error ) {
+    showHint( 'user-id-hint', 'User not found.', 'error' );
+    return;
+  }
   await writeStorage('user', {
     id: input.value,
     name: data.playerInfo.playerName,
@@ -58,6 +64,12 @@ async function onChangedUserID(e) {
     locked: true,
   });
   setUser();
+}
+
+function showHint( id, msg, type='' ) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `hint ${type}`;
 }
 
 async function setLastUpdate() {
@@ -73,10 +85,11 @@ async function updateRankList(e) {
   button.disabled = true;
   try {
     await postMessage({getRanked: {difference:true}});
+    showHint( 'update-rank-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {
     console.error(e);
-    button.parentNode.querySelector('.error').textContent = 'Failed to update. Retry later.';
+    showHint( 'update-rank-hint', 'Failed to update. Retry later.', 'error');
   } finally {
     button.disabled = false;
   }
