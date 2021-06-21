@@ -207,6 +207,22 @@ function arrangeScoreTable() {
   }
 }
 
+const SORT_TYPE = ['','Top Scores','Recent Scores']
+function modifyTableSorter() {
+  const select = document.querySelector('.select');
+  const currentSortType = new URLSearchParams(location.search).get('sort') || 1;
+  select.insertAdjacentHTML('beforebegin',`
+  <div id="score-header">
+    <h2>${SORT_TYPE[currentSortType]}</h2>
+    <a href="${UID}?sort=${3-currentSortType}">
+      <i class="fas fa-angle-right"></i>
+      ${SORT_TYPE[3-currentSortType]}
+    </a>
+  </div>
+  `);
+  select.remove();
+}
+
 async function init() {
   await loadRankedSongs();
   checkMyAccount();
@@ -219,6 +235,7 @@ async function init() {
   addButtonSetPlayer();
   addButtonExpandChart();
   arrangeScoreTable();
+  modifyTableSorter();
 }
 
 if ( document.readyState === 'loading' ) {

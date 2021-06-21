@@ -21,6 +21,14 @@
   color: coral;
 }
 
+#score-header {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1000px;
+  margin: auto;
+  align-items: center;
+}
+
 th.song > div {
   > :not(:last-child) {
     flex: 0 0 auto;
