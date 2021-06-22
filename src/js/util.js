@@ -1,4 +1,4 @@
-import { getMapByHash } from './integration/beatsaver';
+import { BEATSAVER_API, getMapByHash } from './integration/beatsaver';
 import { pushStorage, readStorage, removeBookmark } from './storage';
 
 export function addAction(tr,hash,link){
@@ -10,6 +10,7 @@ export function addAction(tr,hash,link){
 }
 
 export async function addSongDownloadButton(parent,hash) {
+
   parent.insertAdjacentHTML('beforeend',`
   <i
     class="fas fa-cloud-download-alt oneclick-install"
@@ -18,6 +19,17 @@ export async function addSongDownloadButton(parent,hash) {
     data-hash="${hash}"
   ></i>`);
   parent.querySelector('.oneclick-install').addEventListener('click',oneClickInstall);
+  parent.insertAdjacentHTML('beforeend',`
+  <a
+    href="${BEATSAVER_API}/download/hash/${hash.toLowerCase()}"
+    role="button"
+    download
+  >
+    <i
+      class="far fa-file-archive"
+      title="Download Zip File"
+    ></i>
+  </a>`);
 }
 
 export async function addBookmarkButton(parent,hash,link) {
