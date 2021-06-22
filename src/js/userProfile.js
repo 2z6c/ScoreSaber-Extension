@@ -233,7 +233,8 @@ function makeGradient(value) {
 
 async function addComparison(tr) {
   const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
-  const scores = await readStorage('scores');
+  const {id} = await readStorage('user');
+  const {scores} = (await readStorage('scores'))?.[id] ?? {};
   if ( !scores ) return;
   if ( !scores[leaderboardId] ) {
     tr.style.backgroundImage = makeGradient(-100);

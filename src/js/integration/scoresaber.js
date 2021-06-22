@@ -77,14 +77,6 @@ export function getSongStars( hash, diff ) {
 
 /**
  * 
- * @returns {Promise<number>} serial of date of last update.
- */
-export function getLastUpdateUserScores() {
-  return readStorage('lastUpdateUserScores') ?? 0;
-}
-
-/**
- * 
  * @param {number} id Player ID
  * @param {'top'|'recent'} order 
  */
@@ -111,19 +103,21 @@ export async function* fetchPlayerScore( id, order='recent' ) {
   _loading = false;
 }
 
-export async function updateUserScores() {
-  const user = await readStorage('user');
-  if ( !user || !user.id ) return;
-  const last = await getLastUpdateUserScores();
-  const scores = (await readStorage('scores')) || {};
-  for await ( const score of fetchPlayerScore(user.id, last) ) {
-    if ( new Date(score.timeSet) < last ) break;
+const TEMP_RECORD = {scores:{},lastUpdated:0};
+
+export async function updateUserScores( uid ) {
+  const record = (await readStorage('scores'));
+  const {scores,lastUpdated} = record?.[uid] ?? TEMP_RECORD;
+  for await ( const score of fetchPlayerScore(uid) ) {
+    if ( new Date(score.timeSet) < lastUpdated ) break;
     scores[score.leaderboardId] = {
       score: score.score,
       pp: score.pp,
     };
   }
+  await writeStorage(`scores.${uid}`, {
+    scores,
+    lastUpdated: Date.now(),
+  });
   console.log(`user scores have been updated.`);
-  await writeStorage('scores', scores);
-  await writeStorage('lastUpdateUserScores', Date.now());
 }

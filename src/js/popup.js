@@ -101,8 +101,9 @@ async function updateUserScores(e) {
   /** @type {HTMLButtonElement} */
   const button = e.currentTarget;
   button.disabled = true;
+  const {id} = await readStorage('user');
   try {
-    await postToBackground({updateScores: true});
+    await postToBackground({updateScores: {id}});
     showHint( 'update-scores-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {

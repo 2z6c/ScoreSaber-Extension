@@ -4,7 +4,6 @@ import {
   fetchRankedSongs,
   isBusy,
   updateUserScores,
-  getLastUpdateUserScores,
 } from './js/integration/scoresaber';
 import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/storage';
 
@@ -31,9 +30,10 @@ async function asyncRespond(request,sender,sendResponse) {
     sendResponse({busy: isBusy()});
   }
   else if ( request.updateScores ) {
-    if ( !isBusy() ) await updateUserScores();
+    const {id} = request.updateScores;
+    if ( !isBusy() ) await updateUserScores(id);
     sendResponse({
-      updateFinished: await getLastUpdateUserScores()
+      updateFinished: Date.now()
     });
   }
   else console.error('illegal request.', request);
