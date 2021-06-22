@@ -3,7 +3,7 @@ import {
   getLastUpdate,
   BASE_URL
 } from './integration/scoresaber';
-import { postMessage } from './util';
+import { clearUserScores, postToBackground } from './util';
 import { KEY_BOOKMARK, readStorage, removeBookmark, removeFavorite, writeStorage } from './storage';
 
 async function setUser() {
@@ -63,6 +63,7 @@ async function onChangedUserID(e) {
     country: data.playerInfo.country.toLocaleLowerCase(),
     locked: true,
   });
+  await clearUserScores();
   setUser();
 }
 
@@ -84,12 +85,29 @@ async function updateRankList(e) {
   const button = e.currentTarget;
   button.disabled = true;
   try {
-    await postMessage({getRanked: {difference:true}});
+    await postToBackground({getRanked: {difference:true}});
     showHint( 'update-rank-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {
     console.error(e);
     showHint( 'update-rank-hint', 'Failed to update. Retry later.', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/** @param {MouseEvent} e */
+async function updateUserScores(e) {
+  /** @type {HTMLButtonElement} */
+  const button = e.currentTarget;
+  button.disabled = true;
+  try {
+    await postToBackground({updateScores: true});
+    showHint( 'update-scores-hint', 'Scceed to update.');
+    await setLastUpdate();
+  } catch(e) {
+    console.error(e);
+    showHint( 'update-scores-hint', 'Failed to update. Retry later.', 'error');
   } finally {
     button.disabled = false;
   }
@@ -240,13 +258,14 @@ async function getExtensionImage() {
 async function setupUpdateRankedSongsButton() {
   const button = document.getElementById('update-ranked-songs');
   button.addEventListener('click', updateRankList);
-  let busy = await postMessage({isBusy:true});
+  document.getElementById('update-user-score').addEventListener('click',updateUserScores);
+  let busy = await postToBackground({isBusy:true});
   if ( busy ) {
     button.disabled = true;
     let limit = 100;
     while ( busy && --limit ) {
       new Promise(r=>setTimeout(r,200));
-      busy = (await postMessage({isBusy:true}))?.busy;
+      busy = (await postToBackground({isBusy:true}))?.busy;
       console.log(busy);
     }
     button.disabled = false;

@@ -1,6 +1,6 @@
-import {addAction} from './util.js';
-import {getSongStars, loadRankedSongs} from './integration/scoresaber';
-import { pushStorage, readStorage, removeFavorite } from './storage.js';
+import { addAction, clearUserScores } from './util.js';
+import { getSongStars, loadRankedSongs } from './integration/scoresaber';
+import { pushStorage, readStorage, removeFavorite, writeStorage } from './storage.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -59,15 +59,15 @@ async function addButtonSetPlayer() {
   title.nextElementSibling.addEventListener('click',unsetMyAccount);
 }
 
-function setMyAccount(e) {
-  const user = {
+async function setMyAccount(e) {
+  await writeStorage('user', {
     id: UID,
     name: getUserName(),
     avatar: document.querySelector('.avatar > img').src,
     country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
     locked: true,
-  }
-  chrome.storage.local.set({user});
+  });
+  await clearUserScores();
   e.target.closest('h5').classList.add('my-account');
 }
 
@@ -206,6 +206,39 @@ function modifyPP(tr) {
   </div>`);
 }
 
+function makeGradient(value) {
+  const direction = (value>0) ? '80deg' : '260deg';
+  const color = (value>0) ? 'lightgreen' : 'pink';
+  return `linear-gradient(
+    ${direction},
+    ${color}, ${color}, ${Math.abs(value)}%,
+    transparent ${Math.abs(value)}%, transparent
+  )`
+}
+
+async function addComparison(tr) {
+  const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
+  const scores = await readStorage('scores');
+  if ( !scores ) return;
+  if ( !scores[leaderboardId] ) {
+    tr.style.backgroundImage = makeGradient(-100);
+    return;
+  }
+  let ratio = 0;
+  const targetScoreText = tr.querySelector('.scoreBottom').textContent;
+  if ( /score:/.test(targetScoreText) ) {
+    const targetScore = parseInt(/[\d,]+(?=\.)/.exec(targetScoreText)[0].replace(/,/g,''));
+    ratio = scores[leaderboardId].score / targetScore;
+  } else {
+    const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
+    ratio = scores[leaderboardId].pp / targetPP;
+  }
+  ratio -= 1.0;
+  if ( ratio > 1 ) ratio = 1;
+  else if ( ratio < -1 ) ratio = -1;
+  tr.style.backgroundImage = makeGradient(ratio * 100);
+}
+
 function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
@@ -223,6 +256,7 @@ function arrangeScoreTable() {
     addAccracyRank(tr[i]);
     const link = tr[i].querySelector('a').href;
     addAction(tr[i],hash,link);
+    addComparison(tr[i]);
   }
 }
 

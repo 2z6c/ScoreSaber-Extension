@@ -1,9 +1,10 @@
 /**
  * @typedef {import('../types/scoresaber').ScoreSaber.Schema} Schema
  */
-import {readStorage} from '../storage';
+import {readStorage, writeStorage} from '../storage';
 
 export const BASE_URL = 'https://scoresaber.com';
+const NEW_API = 'https://new.scoresaber.com/api';
 
 const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
 let rank = {};
@@ -67,3 +68,45 @@ const extructDifficulty = _diff_type => _diff_type.split('_')[1].replace('Plus',
 export function getSongStars( hash, diff ) {
   return rank[hash]?.[diff];
 }
+
+/**
+ * 
+ * @returns {Promise<number>} serial of date of last update.
+ */
+export function getLastUpdateUserScores() {
+  return readStorage('lastUpdateUserScores') ?? 0;
+}
+
+export async function updateUserScores() {
+  const user = await readStorage('user');
+  if ( !user || !user.id ) return;
+  _loading = true;
+  const last = await getLastUpdateUserScores();
+  const scores = (await readStorage('scores')) || {};
+  REQUEST: for ( let page = 1;; page++ ) {
+    console.log('fetch user scores from scoresaber. page ',page);
+      try {
+        const res = await fetch(`${NEW_API}/player/${user.id}/scores/recent/${page}`);
+        if ( !res.ok ) throw new Error('unreachable to scoresaber.com.');
+        /** @type {import('../types/scoresaber').ScoreSaber.SchemaScores} */
+        const data = await res.json();
+        if ( !data || !data.scores ) break;
+        for ( const score of data.scores ) {
+          if ( new Date(score.timeSet) < last ) break REQUEST;
+          scores[score.leaderboardId] = {
+            score: score.score,
+            pp: score.pp,
+          };
+        }
+        if ( data.scores.length < 7 ) break;
+        await new Promise(r=>setTimeout(r, 300));
+      } catch(e) {
+        console.error(e);
+        break;
+      }
+    }
+    console.log(`user scores have been updated.`);
+    await writeStorage('scores', scores);
+    await writeStorage('lastUpdateUserScores', Date.now());
+    _loading = false;
+  }

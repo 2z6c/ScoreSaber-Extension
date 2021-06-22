@@ -3,6 +3,8 @@ import {
   loadRankedSongs,
   fetchRankedSongs,
   isBusy,
+  updateUserScores,
+  getLastUpdateUserScores,
 } from './js/integration/scoresaber';
 import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/storage';
 
@@ -12,8 +14,8 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   if ( !last || Date.now() - last >= 86400000 ) {
     await fetchRankedSongs();
   }
-  loadRankedSongs().then(r=>{
-    console.log(r);
+  loadRankedSongs().then(()=>{
+    console.log('finished to load ranked list.');
   });
   if ( !await readStorage(KEY_FAVORITE) ) await writeStorage(KEY_FAVORITE, []);
   if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
@@ -27,6 +29,12 @@ async function asyncRespond(request,sender,sendResponse) {
   }
   else if ( request.isBusy ) {
     sendResponse({busy: isBusy()});
+  }
+  else if ( request.updateScores ) {
+    if ( !isBusy() ) await updateUserScores();
+    sendResponse({
+      updateFinished: await getLastUpdateUserScores()
+    });
   }
   else console.error('illegal request.', request);
 }

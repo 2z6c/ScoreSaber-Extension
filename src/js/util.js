@@ -1,5 +1,10 @@
 import { BEATSAVER_API, getMapByHash } from './integration/beatsaver';
-import { pushStorage, readStorage, removeBookmark } from './storage';
+import {
+  pushStorage,
+  writeStorage,
+  readStorage,
+  removeBookmark
+} from './storage';
 
 export function addAction(tr,hash,link){
   const td = document.createElement('td');
@@ -116,8 +121,14 @@ export async function waitElement(selector,parent=document) {
   return el;
 }
 
-export function postMessage(query) {
+export function postToBackground(query) {
   return new Promise( resolve => {
     chrome.runtime.sendMessage( query, resolve );
   });
+}
+
+export async function clearUserScores() {
+  await writeStorage('lastUpdateUserScores', 0);
+  await writeStorage('scores', {});
+  await postToBackground('updateScores');
 }
