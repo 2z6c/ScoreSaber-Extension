@@ -1,6 +1,7 @@
 import { addAction, clearUserScores } from './util.js';
 import { getSongStars, loadRankedSongs } from './integration/scoresaber';
 import { pushStorage, readStorage, removeFavorite, writeStorage } from './storage.js';
+import { snipe } from './snipe.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -38,6 +39,7 @@ function changeSongRankingLink(tr) {
 async function addButtonSetPlayer() {
   const locked = (await readStorage('user'))?.locked;
   const title = document.querySelector('.title a');
+  addSnipeButton(title);
   addFavoriteButton(title);
   title.insertAdjacentHTML('afterend',`
   <i
@@ -83,6 +85,19 @@ async function addFavoriteButton(title) {
   ></i>
   `);
   title.nextElementSibling.addEventListener('click',handleFavorite);
+}
+
+function addSnipeButton(title) {
+  title.insertAdjacentHTML('afterend',`
+  <i
+    id="button-snipe"
+    class="fas fa-crosshairs"
+    role="button"
+    title="Snipe ${title.textContent.trim()}."
+  ></i>`);
+  title.nextElementSibling.addEventListener('click',async ()=>{
+    await snipe(UID);
+  });
 }
 
 /** @param {MouseEvent} e */

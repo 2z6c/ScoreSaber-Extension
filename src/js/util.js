@@ -132,3 +132,18 @@ export async function clearUserScores() {
   await writeStorage('scores', {});
   await postToBackground('updateScores');
 }
+
+export function downloadJson( obj, filename='playlist' ) {
+  const blob = new Blob([JSON.stringify(obj)]);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.download = safeName`${filename}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function safeName(s,...a) {
+  return a.reduce((o,t,i)=>o+t+s[i+1],s[0]).replace(/[/\\:*?<>|]/g,'_');
+}

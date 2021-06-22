@@ -3,7 +3,7 @@ import {
   getLastUpdate,
   BASE_URL
 } from './integration/scoresaber';
-import { clearUserScores, postToBackground } from './util';
+import { clearUserScores, downloadJson, postToBackground } from './util';
 import { KEY_BOOKMARK, readStorage, removeBookmark, removeFavorite, writeStorage } from './storage';
 
 async function setUser() {
@@ -223,21 +223,13 @@ async function downloadPlaylist(e) {
   /** @type {HTMLButtonElement} */
   const button = e.currentTarget;
   button.disabled = true;
-  const playlist = {
+  downloadJson({
     playlistTitle: 'ScoreSaber Bookmark',
     playlistAuthor: (await readStorage('user'))?.name || 'ScoreSaber-Extension',
     image: await getExtensionImage(),
     songs: (await readStorage(KEY_BOOKMARK)).map(({hash})=>({hash})),
-  };
-  const blob = new Blob([JSON.stringify(playlist)]);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.download = 'playlist.json';
-  a.click();
+  });
   button.disabled = false;
-  URL.revokeObjectURL(url);
 }
 
 async function getExtensionImage() {

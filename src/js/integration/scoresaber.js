@@ -13,6 +13,12 @@ export function isBusy() {
   return _loading;
 }
 
+export async function fetchPlayer( id ) {
+  const res = await fetch(`${NEW_API}/player/${id}/full`);
+  if ( !res.ok ) return;
+  return res.json();
+}
+
 export async function fetchRankedSongs({difference=false}={}) {
   _loading = true;
   if ( Object.keys(rank).length === 0 ) difference = false;
@@ -77,36 +83,47 @@ export function getLastUpdateUserScores() {
   return readStorage('lastUpdateUserScores') ?? 0;
 }
 
+/**
+ * 
+ * @param {number} id Player ID
+ * @param {'top'|'recent'} order 
+ */
+export async function* fetchPlayerScore( id, order='recent' ) {
+  _loading = true;
+  for ( let page = 1;; page++ ) {
+    console.log('fetch user scores from scoresaber. page ',page);
+    try {
+      const res = await fetch(`${NEW_API}/player/${id}/scores/${order}/${page}`);
+      if ( !res.ok ) throw new Error('unreachable to scoresaber.com.');
+      /** @type {import('../types/scoresaber').ScoreSaber.SchemaScores} */
+      const data = await res.json();
+      if ( !data || !data.scores ) break;
+      for ( const score of data.scores ) {
+        yield score;
+      }
+      if ( data.scores.length < 8 ) break;
+      await new Promise(r=>setTimeout(r, 300));
+    } catch(e) {
+      console.error(e);
+      break;
+    }
+  }
+  _loading = false;
+}
+
 export async function updateUserScores() {
   const user = await readStorage('user');
   if ( !user || !user.id ) return;
-  _loading = true;
   const last = await getLastUpdateUserScores();
   const scores = (await readStorage('scores')) || {};
-  REQUEST: for ( let page = 1;; page++ ) {
-    console.log('fetch user scores from scoresaber. page ',page);
-      try {
-        const res = await fetch(`${NEW_API}/player/${user.id}/scores/recent/${page}`);
-        if ( !res.ok ) throw new Error('unreachable to scoresaber.com.');
-        /** @type {import('../types/scoresaber').ScoreSaber.SchemaScores} */
-        const data = await res.json();
-        if ( !data || !data.scores ) break;
-        for ( const score of data.scores ) {
-          if ( new Date(score.timeSet) < last ) break REQUEST;
-          scores[score.leaderboardId] = {
-            score: score.score,
-            pp: score.pp,
-          };
-        }
-        if ( data.scores.length < 7 ) break;
-        await new Promise(r=>setTimeout(r, 300));
-      } catch(e) {
-        console.error(e);
-        break;
-      }
-    }
-    console.log(`user scores have been updated.`);
-    await writeStorage('scores', scores);
-    await writeStorage('lastUpdateUserScores', Date.now());
-    _loading = false;
+  for await ( const score of fetchPlayerScore(user.id, last) ) {
+    if ( new Date(score.timeSet) < last ) break;
+    scores[score.leaderboardId] = {
+      score: score.score,
+      pp: score.pp,
+    };
   }
+  console.log(`user scores have been updated.`);
+  await writeStorage('scores', scores);
+  await writeStorage('lastUpdateUserScores', Date.now());
+}
