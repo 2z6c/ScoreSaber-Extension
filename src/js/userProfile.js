@@ -188,6 +188,24 @@ const makeDifficultyLabel = (text,color,star) => `
   </div>
 </td>`;
 
+function modifyPP(tr) {
+  const score = tr.querySelector('.score');
+  const regex = /[0-9.]+(?=pp)/gi;
+  const rawPP = regex.exec(score.textContent)[0];
+  const weightedPP = regex.exec(score.textContent)[0];
+  const w = weightedPP * 100 / rawPP;
+  const br = score.querySelector('.scoreBottom');
+  while ( br.previousElementSibling ) br.previousElementSibling.remove();
+  br.insertAdjacentHTML('beforebegin',`
+  <div
+    class="scoreTop"
+    style="border-image-source:linear-gradient(90deg,lime,lime ${w}%,gray ${w}%,gray);"
+  >
+    <span class="raw-pp">${rawPP}pp</span>
+    <span class="weighted-pp">${weightedPP}pp</span>
+  </div>`);
+}
+
 function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
@@ -201,6 +219,7 @@ function arrangeScoreTable() {
     dif.remove();
     // modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
+    modifyPP(tr[i]);
     addAccracyRank(tr[i]);
     const link = tr[i].querySelector('a').href;
     addAction(tr[i],hash,link);
@@ -223,6 +242,13 @@ function modifyTableSorter() {
   select.remove();
 }
 
+function fixPagenation() {
+  const links = document.querySelectorAll('.pagination a');
+  for ( const a of links ) {
+    a.href = a.href.replace('&','?');
+  }
+}
+
 async function init() {
   await loadRankedSongs();
   checkMyAccount();
@@ -236,6 +262,7 @@ async function init() {
   addButtonExpandChart();
   arrangeScoreTable();
   modifyTableSorter();
+  fixPagenation();
 }
 
 if ( document.readyState === 'loading' ) {

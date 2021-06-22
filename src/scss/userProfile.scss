@@ -70,6 +70,20 @@ th.song > div {
   margin-right: 4px;
 }
 
+.scoreTop {
+  width: 80px;
+  > span {
+    display: block;
+    text-align: right;
+  }
+  &:hover > .raw-pp,
+  &:not(:hover) > .weighted-pp {
+    display: none;
+  }
+  border-bottom: 2px solid lightgray;
+  border-image-slice: 1;
+}
+
 .accuracy-rank-badge {
   font-size: .8rem;
   font-weight: 600;
