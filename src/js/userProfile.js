@@ -182,7 +182,10 @@ function moveMapper(tr) {
 function addAccracyRank(tr){
   const acc = tr.querySelector('.scoreBottom');
   const value = parseFloat(acc.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
-  if ( !value ) return;
+  if ( !value ) {
+    acc.textContent = acc.textContent.replace(/\..*$/,'');
+    return;
+  }
   acc.textContent = `${value.toFixed(2)}%`;
   acc.insertAdjacentHTML('afterbegin',createAccuracyBadge(value));
 }
