@@ -96,8 +96,8 @@ async function oneClickInstall(e){
 }
 
 /**
- * 
- * @param {string} timestamp 
+ *
+ * @param {string} timestamp
  * @returns {string}
  */
 export function shortenTimestamp(timestamp){
@@ -146,4 +146,15 @@ export function downloadJson( obj, filename='playlist' ) {
 
 function safeName(s,...a) {
   return a.reduce((o,t,i)=>o+t+s[i+1],s[0]).replace(/[/\\:*?<>|]/g,'_');
+}
+
+export function getAccracyRank( accuracy ) {
+  if ( accuracy === 100.0 ) return 'SSS';
+  else if ( accuracy >= 90.0 ) return 'SS';
+  else if ( accuracy >= 80.0 ) return 'S';
+  else if ( accuracy >= 65.0 ) return 'A';
+  else if ( accuracy >= 50.0 ) return 'B';
+  else if ( accuracy >= 35.0 ) return 'C';
+  else if ( accuracy >= 20.0 ) return 'D';
+  return 'E';
 }

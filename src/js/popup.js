@@ -25,7 +25,7 @@ async function setUser() {
     const lock = input.nextSibling;
     lock.title = 'Unlock';
     lock.querySelector('i').className = 'fas fa-lock';
-  } 
+  }
 }
 
 let locked = false;
@@ -75,7 +75,7 @@ function showHint( id, msg, type='' ) {
 
 async function setLastUpdate() {
   const b = document.getElementById('last-update-date');
-  const text = await getLastUpdate(); 
+  const text = await getLastUpdate();
   b.textContent = text ? new Date(text).toLocaleString() : 'Now Loading...';
 }
 

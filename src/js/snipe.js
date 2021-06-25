@@ -1,6 +1,6 @@
-import { fetchPlayer, fetchPlayerScore } from "./integration/scoresaber";
-import { readStorage } from "./storage";
-import { downloadJson } from "./util";
+import { fetchPlayer, fetchPlayerScore } from './integration/scoresaber';
+import { readStorage } from './storage';
+import { downloadJson } from './util';
 
 export async function snipe( targetId, threshold=20 ) {
   const myScores = await readStorage('scores');

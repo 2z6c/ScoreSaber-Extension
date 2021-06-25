@@ -3,7 +3,7 @@ export const KEY_FAVORITE = 'favorite';
 export const KEY_BOOKMARK = 'bookmark';
 
 /**
- * @param {string} key 
+ * @param {string} key
  * @returns {Promise<unknown>}
  */
 export function readStorage(key) {
@@ -15,9 +15,9 @@ export function readStorage(key) {
 }
 
 /**
- * 
- * @param {string} key 
- * @param {*} value 
+ *
+ * @param {string} key
+ * @param {*} value
  * @returns {Promise<void>}
  */
 export async function writeStorage( key, value ) {
@@ -35,10 +35,10 @@ export async function writeStorage( key, value ) {
 /**
  * @typedef {import("./types/storage").Favorite} Favorite
  * @typedef {import("./types/storage").Bookmark} Bookmark
- * 
- * @param {'favorite'|'bookmark'} key 
- * @param {Favorite|Bookmark} value 
- * @returns 
+ *
+ * @param {'favorite'|'bookmark'} key
+ * @param {Favorite|Bookmark} value
+ * @returns
  */
 export async function pushStorage( key, value ) {
   let list = await readStorage( key );
@@ -51,7 +51,7 @@ export async function pushStorage( key, value ) {
 }
 
 /**
- * 
+ *
  * @param {string|number} id player id
  * @returns {Promise<void>}
  */
@@ -65,7 +65,7 @@ export async function removeFavorite( id ) {
 }
 
 /**
- * 
+ *
  * @param {string|number} id player id
  * @returns {Promise<boolean>}
  */

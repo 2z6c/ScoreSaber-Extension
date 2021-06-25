@@ -5,6 +5,8 @@ import {
   isBusy,
   updateUserScores,
 } from './js/integration/scoresaber';
+import { predictScoreGain, sortPPAsc } from './js/scoreComparator';
+import { scoreManager } from './js/scoreManager';
 import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/storage';
 
 chrome.runtime.onInstalled.addListener(async ()=>{
@@ -18,6 +20,8 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   });
   if ( !await readStorage(KEY_FAVORITE) ) await writeStorage(KEY_FAVORITE, []);
   if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
+
+  await scoreManager.open();
 });
 
 async function asyncRespond(request,sender,sendResponse) {
@@ -35,6 +39,17 @@ async function asyncRespond(request,sender,sendResponse) {
     sendResponse({
       updateFinished: Date.now()
     });
+  }
+  else if ( request.getScore ) {
+    const {leaderboardId,userId} = request.getScore;
+    sendResponse(await scoreManager.getScore(userId,leaderboardId));
+  }
+  else if ( request.predictScore ) {
+    // const {leaderboardId,pp} = request.predictScore;
+    const {id: userId} = await readStorage('user');
+    const {accumlatedScores} = await scoreManager.getUser(userId);
+    const score = sortPPAsc( await scoreManager.getUserScore(userId));
+    sendResponse(await predictScoreGain( {score,accumlatedScores}, request.predictScore ));
   }
   else console.error('illegal request.', request);
 }

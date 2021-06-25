@@ -1,4 +1,9 @@
-import { addAction, clearUserScores } from './util.js';
+import {
+  addAction,
+  clearUserScores,
+  postToBackground,
+  getAccracyRank,
+} from './util.js';
 import { getSongStars, loadRankedSongs } from './integration/scoresaber';
 import { pushStorage, readStorage, removeFavorite, writeStorage } from './storage.js';
 import { snipe } from './snipe.js';
@@ -144,7 +149,7 @@ function addButtonExpandChart() {
 
 let isChartExpanded = false;
 /**
- * @param {MouseEvent} e 
+ * @param {MouseEvent} e
  */
 function expandChart(e) {
   const i = e.currentTarget;
@@ -156,14 +161,14 @@ function expandChart(e) {
 }
 
 /**
- * @param {HTMLTableRowElement} tr 
+ * @param {HTMLTableRowElement} tr
  */
 function moveMapper(tr) {
   const mapper = tr.querySelector('.mapper');
   const title = tr.querySelector('a');
   tr.querySelector('br').remove();
   const a = document.createElement('a');
-  a.insertAdjacentHTML('afterbegin','<i class="fas fa-user-edit mapper-icon" title="Mapper"></i>')
+  a.insertAdjacentHTML('afterbegin','<i class="fas fa-user-edit mapper-icon" title="Mapper"></i>');
   a.appendChild(mapper);
   a.setAttribute('href',`/?search=${encodeURIComponent(mapper.textContent.trim())}`);
   const div = document.createElement('div');
@@ -179,20 +184,14 @@ function addAccracyRank(tr){
   const value = parseFloat(acc.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
   if ( !value ) return;
   acc.textContent = `${value.toFixed(2)}%`;
-  // const td = acc.closest('th');
-  // td.insertAdjacentHTML('afterbegin',`<div class="parcentage-bar" style="width:${value}%"></div>`);
-  let rating = 'E';
-  if ( value === 100.0 ) rating = 'SSS';
-  else if ( value >= 90.0 ) rating = 'SS';
-  else if ( value >= 80.0 ) rating = 'S';
-  else if ( value >= 65.0 ) rating = 'A';
-  else if ( value >= 50.0 ) rating = 'B';
-  else if ( value >= 35.0 ) rating = 'C';
-  else if ( value >= 20.0 ) rating = 'D';
-  acc.insertAdjacentHTML('afterbegin',`
-  <i
+  acc.insertAdjacentHTML('afterbegin',createAccuracyBadge(value));
+}
+
+function createAccuracyBadge( accuracy ) {
+  const rating = getAccracyRank( accuracy );
+  return `<i
     class="accuracy-rank-badge rank-${rating}"
-  >${rating}</i>`);
+  >${rating}</i>`;
 }
 
 const makeDifficultyLabel = (text,color,star) => `
@@ -214,29 +213,31 @@ function modifyPP(tr) {
   br.insertAdjacentHTML('beforebegin',`
   <div
     class="scoreTop"
-    style="border-image-source:linear-gradient(90deg,lime,lime ${w}%,gray ${w}%,gray);"
+    style="border-image-source:linear-gradient(90deg,gold,gold ${w}%,gray ${w}%,gray);"
   >
     <span class="raw-pp">${rawPP}pp</span>
     <span class="weighted-pp">${weightedPP}pp</span>
   </div>`);
 }
 
-function makeGradient(value) {
-  const direction = (value>0) ? '80deg' : '260deg';
-  const color = (value>0) ? 'lightgreen' : 'pink';
-  return `linear-gradient(
-    ${direction},
-    ${color}, ${color}, ${Math.abs(value)}%,
-    transparent ${Math.abs(value)}%, transparent
-  )`
-}
+// function makeGradient(value) {
+//   const direction = (value>0) ? '80deg' : '260deg';
+//   const color = (value>0) ? 'lightgreen' : 'pink';
+//   return `linear-gradient(
+//     ${direction},
+//     ${color}, ${color}, ${Math.abs(value)}%,
+//     transparent ${Math.abs(value)}%, transparent
+//   )`;
+// }
 
 async function addComparison(tr) {
   const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
-  const {id} = await readStorage('user');
-  const {scores} = (await readStorage('scores'))?.[id] ?? {};
-  if ( !scores ) return;
-  if ( !scores[leaderboardId] ) {
+  const {id: userId} = await readStorage('user');
+  const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
+  const score = await postToBackground({getScore: {leaderboardId, userId}});
+  tr.querySelector('.score').insertAdjacentHTML('afterend', await createMyScore(score,leaderboardId,targetPP));
+  /*
+  if ( !score ) {
     tr.style.backgroundImage = makeGradient(-100);
     return;
   }
@@ -244,19 +245,54 @@ async function addComparison(tr) {
   const targetScoreText = tr.querySelector('.scoreBottom').textContent;
   if ( /score:/.test(targetScoreText) ) {
     const targetScore = parseInt(/[\d,]+(?=\.)/.exec(targetScoreText)[0].replace(/,/g,''));
-    ratio = scores[leaderboardId].score / targetScore;
+    ratio = score.score / targetScore;
   } else {
     const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
-    ratio = scores[leaderboardId].pp / targetPP;
+    ratio = score.pp / targetPP;
   }
   ratio -= 1.0;
   if ( ratio > 1 ) ratio = 1;
   else if ( ratio < -1 ) ratio = -1;
   tr.style.backgroundImage = makeGradient(ratio * 100);
+  */
+}
+
+/**
+ * @param {import('./types/database').SongScore|void} score
+ * @param {number} targetPP
+ */
+async function createMyScore(score,leaderboardId,targetPP) {
+  const accuracy = score?.accuracy;
+  let comp = 0;
+  if ( targetPP && (score?.pp??0) < targetPP ) {
+    comp = await postToBackground({predictScore:{
+      leaderboardId,
+      pp: targetPP,
+    }});
+    comp = Math.round( comp * 100 ) / 100;
+  }
+  const pp = score ? Math.round(score.pp * 100) / 100: 0;
+  return `
+  <td class="score">
+    <div
+      class="scoreTop"
+    >
+      <span class="raw-pp">${pp.toFixed(2)}pp</span>
+      <span
+        class="weighted-pp"
+        title="The predicted PP you will get if you achieve the same score."
+      >+${comp.toFixed(2)}pp</span>
+    </div>
+    <span class="scoreBottom">
+      ${accuracy?createAccuracyBadge(accuracy):''}
+      ${accuracy?accuracy.toFixed(2)+'%':'score: '+(score?.score??0).toLocaleString()}
+    </span>
+  </td>`;
 }
 
 function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
+  tr[0].insertAdjacentHTML('beforeend','<th>My Score</th>');
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
@@ -276,7 +312,7 @@ function arrangeScoreTable() {
   }
 }
 
-const SORT_TYPE = ['','Top Scores','Recent Scores']
+const SORT_TYPE = ['','Top Scores','Recent Scores'];
 function modifyTableSorter() {
   const select = document.querySelector('.select');
   const currentSortType = new URLSearchParams(location.search).get('sort') || 1;

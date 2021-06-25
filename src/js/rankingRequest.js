@@ -11,7 +11,7 @@ const observer = new IntersectionObserver( entries => {
     addAction( el, hash, el.querySelector('a').href );
     observer.unobserve(el);
   }
-})
+});
 
 async function waitTable() {
   let head = document.querySelectorAll('.songs thead tr');

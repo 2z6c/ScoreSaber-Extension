@@ -1,9 +1,9 @@
 export const BEATSAVER_API = 'https://beatsaver.com/api';
 
 /**
- * 
- * @param {string} hash 
- * @param {number} [retries] 
+ *
+ * @param {string} hash
+ * @param {number} [retries]
  * @returns {Promise<import("../types/beatsaver").BeatSaver.Map>}
  */
 export async function getMapByHash( hash, retries=2 ) {

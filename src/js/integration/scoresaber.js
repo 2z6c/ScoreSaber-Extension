@@ -1,12 +1,14 @@
 /**
  * @typedef {import('../types/scoresaber').ScoreSaber.Schema} Schema
  */
-import {readStorage, writeStorage} from '../storage';
+import { initAccumlatedScores, sortPPAsc } from '../scoreComparator';
+import { scoreManager } from '../scoreManager';
+import {readStorage} from '../storage';
 
 export const BASE_URL = 'https://scoresaber.com';
 const NEW_API = 'https://new.scoresaber.com/api';
 
-const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
+const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`;
 let rank = {};
 let _loading = false;
 export function isBusy() {
@@ -76,9 +78,9 @@ export function getSongStars( hash, diff ) {
 }
 
 /**
- * 
+ *
  * @param {number} id Player ID
- * @param {'top'|'recent'} order 
+ * @param {'top'|'recent'} order
  */
 export async function* fetchPlayerScore( id, order='recent' ) {
   _loading = true;
@@ -103,21 +105,28 @@ export async function* fetchPlayerScore( id, order='recent' ) {
   _loading = false;
 }
 
-const TEMP_RECORD = {scores:{},lastUpdated:0};
-
-export async function updateUserScores( uid ) {
-  const record = (await readStorage('scores'));
-  const {scores,lastUpdated} = record?.[uid] ?? TEMP_RECORD;
-  for await ( const score of fetchPlayerScore(uid) ) {
+export async function updateUserScores( userId ) {
+  await scoreManager.open();
+  const user = await scoreManager.getUser(userId);
+  let lastUpdated = user?.lastUpdated ?? 0;
+  for await ( const score of fetchPlayerScore(userId) ) {
     if ( new Date(score.timeSet) < lastUpdated ) break;
-    scores[score.leaderboardId] = {
+    const accuracy = score.maxScore
+      ? score.score * 100 / score.maxScore
+      : void 0;
+    await scoreManager.addScore({
+      leaderboardId: score.leaderboardId,
+      userId,
       score: score.score,
       pp: score.pp,
-    };
+      accuracy,
+    });
   }
-  await writeStorage(`scores.${uid}`, {
-    scores,
+  const scores = sortPPAsc(await scoreManager.getUserScore( userId ));
+  scoreManager.updateUser({
+    userId,
     lastUpdated: Date.now(),
+    accumlatedScores: initAccumlatedScores( scores ),
   });
   console.log(`user scores have been updated.`);
 }
