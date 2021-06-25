@@ -82,6 +82,20 @@ th.song > div {
   }
   border-bottom: 2px solid lightgray;
   border-image-slice: 1;
+  .unranked-map & {
+    text-decoration: line-through;
+    font-weight: normal;
+    color: lightgray;
+  }
+}
+
+.scoreBottom {
+  display: block;
+  text-align: right;
+  font-weight: normal;
+  .ranked-map & {
+    font-style: normal;
+  }
 }
 
 .accuracy-rank-badge {

@@ -183,7 +183,7 @@ function addAccracyRank(tr){
   const acc = tr.querySelector('.scoreBottom');
   const value = parseFloat(acc.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
   if ( !value ) {
-    acc.textContent = acc.textContent.replace(/\..*$/,'');
+    acc.textContent = acc.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
     return;
   }
   acc.textContent = `${value.toFixed(2)}%`;
@@ -288,9 +288,18 @@ async function createMyScore(score,leaderboardId,targetPP) {
     </div>
     <span class="scoreBottom">
       ${accuracy?createAccuracyBadge(accuracy):''}
-      ${accuracy?accuracy.toFixed(2)+'%':'score: '+(score?.score??0).toLocaleString()}
+      ${accuracy?accuracy.toFixed(2)+'%':(score?.score??0).toLocaleString()}
     </span>
   </td>`;
+}
+
+function addStars(tr,hash) {
+  const dif = tr.querySelector('span[style^="color"]');
+  const diffText = dif.textContent.trim();
+  const star = getSongStars(hash,diffText);
+  dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
+  dif.remove();
+  tr.classList.add(star?'ranked-map':'unranked-map');
 }
 
 function arrangeScoreTable() {
@@ -300,11 +309,7 @@ function arrangeScoreTable() {
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
 
-    const dif = tr[i].querySelector('span[style^="color"]');
-    const diffText = dif.textContent.trim();
-    const star = getSongStars(hash,diffText);
-    dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
-    dif.remove();
+    addStars(tr[i],hash);
     // modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
     modifyPP(tr[i]);

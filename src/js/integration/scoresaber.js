@@ -106,7 +106,6 @@ export async function* fetchPlayerScore( id, order='recent' ) {
 }
 
 export async function updateUserScores( userId ) {
-  await scoreManager.open();
   const user = await scoreManager.getUser(userId);
   let lastUpdated = user?.lastUpdated ?? 0;
   for await ( const score of fetchPlayerScore(userId) ) {

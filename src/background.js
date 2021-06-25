@@ -20,8 +20,6 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   });
   if ( !await readStorage(KEY_FAVORITE) ) await writeStorage(KEY_FAVORITE, []);
   if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
-
-  await scoreManager.open();
 });
 
 async function asyncRespond(request,sender,sendResponse) {
