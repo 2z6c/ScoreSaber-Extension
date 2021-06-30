@@ -1,1 +1,20 @@
 @import './common.scss';
+
+.songs td.song {
+  white-space: nowrap;
+  img {
+    width: 46px;
+    height: 46px;
+  }
+  > div {
+    display: inline-block;
+    white-space: normal;
+  }
+}
+
+.scores {
+  text-align: right;
+  > :first-child {
+    border-bottom: 1px solid gray;
+  }
+}

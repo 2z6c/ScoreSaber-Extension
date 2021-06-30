@@ -2,7 +2,10 @@ import {
   addAction,
   clearUserScores,
   postToBackground,
-  getAccracyRank,
+  // getAccracyRank,
+  makeDifficultyLabel,
+  createMyScore,
+  createAccuracyBadge,
 } from './util.js';
 import { getSongStars, loadRankedSongs } from './integration/scoresaber';
 import { pushStorage, readStorage, removeFavorite, writeStorage } from './storage.js';
@@ -179,69 +182,56 @@ function moveMapper(tr) {
   div.appendChild(d);
 }
 
-function addAccracyRank(tr){
-  const acc = tr.querySelector('.scoreBottom');
-  const value = parseFloat(acc.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
-  if ( !value ) {
-    acc.textContent = acc.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
-    return;
-  }
-  acc.textContent = `${value.toFixed(2)}%`;
-  acc.insertAdjacentHTML('afterbegin',createAccuracyBadge(value));
-}
-
-function createAccuracyBadge( accuracy ) {
-  const rating = getAccracyRank( accuracy );
-  return `<i
-    class="accuracy-rank-badge rank-${rating}"
-  >${rating}</i>`;
-}
-
-const makeDifficultyLabel = (text,color,star) => `
-<td>
-  <div class="difficulty-label" style="background:${color}">
-    <div>${text}</div>
-    <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star?.toFixed(2)}</div>
-  </div>
-</td>`;
-
 function modifyPP(tr) {
-  const score = tr.querySelector('.score');
+  const td = tr.querySelector('.score');
   const regex = /[0-9.]+(?=pp)/gi;
-  const rawPP = regex.exec(score.textContent)[0];
-  const weightedPP = regex.exec(score.textContent)[0];
+  const rawPP = regex.exec(td.textContent)[0];
+  const weightedPP = regex.exec(td.textContent)[0];
   const w = weightedPP * 100 / rawPP;
-  const br = score.querySelector('.scoreBottom');
-  while ( br.previousElementSibling ) br.previousElementSibling.remove();
-  br.insertAdjacentHTML('beforebegin',`
-  <div
-    class="scoreTop"
-    style="border-image-source:linear-gradient(90deg,gold,gold ${w}%,gray ${w}%,gray);"
-  >
-    <span class="raw-pp">${rawPP}pp</span>
-    <span class="weighted-pp">${weightedPP}pp</span>
-  </div>`);
+  const scoreBottom = td.querySelector('.scoreBottom');
+  while ( scoreBottom.previousElementSibling ) scoreBottom.previousElementSibling.remove();
+
+
+  const accracy = parseFloat(scoreBottom.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
+  let bottomText = 'N/A';
+  if ( isNaN(accracy) ) {
+    bottomText = scoreBottom.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
+    return;
+  } else {
+    bottomText = `${accracy.toFixed(2)}%`;
+  }
+  const badge = accracy ? createAccuracyBadge(accracy) : '';
+  td.innerHTML = `
+  <div style="display:inline-block">
+    <div
+      class="scoreTop"
+      style="border-image-source:linear-gradient(90deg,gold,gold ${w}%,gray ${w}%,gray);"
+    >
+      <span class="raw-pp">${rawPP}pp</span>
+      <span class="weighted-pp">${weightedPP}pp</span>
+    </div>
+    <span class="scoreBottom">
+      ${badge}
+      ${bottomText}
+    </span>
+  </div>`;
 }
 
-// function makeGradient(value) {
-//   const direction = (value>0) ? '80deg' : '260deg';
-//   const color = (value>0) ? 'lightgreen' : 'pink';
-//   return `linear-gradient(
-//     ${direction},
-//     ${color}, ${color}, ${Math.abs(value)}%,
-//     transparent ${Math.abs(value)}%, transparent
-//   )`;
-// }
-
-async function addComparison(tr) {
+async function addComparison(tr,userId) {
   const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
-  const {id: userId} = await readStorage('user');
+  // const {id: userId} = await readStorage('user');
   const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
+  const td = document.createElement('td');
+  const th = tr.querySelector('.score');
+  th.insertAdjacentElement('afterend', td);
+  td.classList.add('score');
   const score = await postToBackground({getScore: {leaderboardId, userId}});
-  tr.querySelector('.score').insertAdjacentHTML('afterend', await createMyScore(score,leaderboardId,targetPP));
+  if ( score?.pp > targetPP ) td.classList.add('win');
+  else th.classList.add('win');
+  td.insertAdjacentHTML('afterbegin', await createMyScore(score,leaderboardId,targetPP));
   /*
   if ( !score ) {
-    tr.style.backgroundImage = makeGradient(-100);
+    td.style.backgroundImage = makeGradient(-100);
     return;
   }
   let ratio = 0;
@@ -257,40 +247,7 @@ async function addComparison(tr) {
   if ( ratio > 1 ) ratio = 1;
   else if ( ratio < -1 ) ratio = -1;
   tr.style.backgroundImage = makeGradient(ratio * 100);
-  */
-}
-
-/**
- * @param {import('./types/database').SongScore|void} score
- * @param {number} targetPP
- */
-async function createMyScore(score,leaderboardId,targetPP) {
-  const accuracy = score?.accuracy;
-  let comp = 0;
-  if ( targetPP && (score?.pp??0) < targetPP ) {
-    comp = await postToBackground({predictScore:{
-      leaderboardId,
-      pp: targetPP,
-    }});
-    comp = Math.round( comp * 100 ) / 100;
-  }
-  const pp = score ? Math.round(score.pp * 100) / 100: 0;
-  return `
-  <td class="score">
-    <div
-      class="scoreTop"
-    >
-      <span class="raw-pp">${pp.toFixed(2)}pp</span>
-      <span
-        class="weighted-pp"
-        title="The predicted PP you will get if you achieve the same score."
-      >+${comp.toFixed(2)}pp</span>
-    </div>
-    <span class="scoreBottom">
-      ${accuracy?createAccuracyBadge(accuracy):''}
-      ${accuracy?accuracy.toFixed(2)+'%':(score?.score??0).toLocaleString()}
-    </span>
-  </td>`;
+  //*/
 }
 
 function addStars(tr,hash) {
@@ -302,21 +259,21 @@ function addStars(tr,hash) {
   tr.classList.add(star?'ranked-map':'unranked-map');
 }
 
-function arrangeScoreTable() {
+async function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
-  tr[0].insertAdjacentHTML('beforeend','<th>My Score</th>');
+  const user = await readStorage('user');
+  if ( user ) tr[0].insertAdjacentHTML('beforeend',`<th>${user.name}</th>`);
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
 
     addStars(tr[i],hash);
-    // modifyTimestamp(tr[i]);
     moveMapper(tr[i]);
     modifyPP(tr[i]);
-    addAccracyRank(tr[i]);
+    // addAccracyRank(tr[i]);
     const link = tr[i].querySelector('a').href;
     addAction(tr[i],hash,link);
-    addComparison(tr[i]);
+    if ( user ) addComparison(tr[i],user.id);
   }
 }
 
@@ -345,6 +302,8 @@ function fixPagenation() {
 
 async function init() {
   await loadRankedSongs();
+  arrangeScoreTable();
+
   checkMyAccount();
   changeRankingLink('a[href="/global"]');
   changeRankingLink('a[href^="/global?country="]');
@@ -354,7 +313,6 @@ async function init() {
   }
   addButtonSetPlayer();
   addButtonExpandChart();
-  arrangeScoreTable();
   modifyTableSorter();
   fixPagenation();
 }
