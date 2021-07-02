@@ -6,6 +6,8 @@ import {
   removeBookmark
 } from './storage';
 
+export const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
 export function addAction(tr,hash,link){
   const td = document.createElement('td');
   td.classList.add('action');
@@ -115,7 +117,7 @@ export async function waitElement(selector,parent=document) {
   let el = parent.querySelector(selector);
   let loop = 100;
   while ( !el && --loop > 0 ) {
-    await new Promise(r=>setTimeout(r,250));
+    await sleep(250);
     el = parent.querySelector(selector);
   }
   return el;

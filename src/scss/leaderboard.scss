@@ -1,4 +1,5 @@
 @import './common.scss';
+@import './scoreCell';
 
 .songs td.song {
   white-space: nowrap;
@@ -16,5 +17,14 @@
   text-align: right;
   > :first-child {
     border-bottom: 1px solid gray;
+  }
+  > div {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    > span {
+      margin-left: 4px;
+    }
   }
 }

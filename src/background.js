@@ -51,7 +51,6 @@ const api = {
 async function asyncRespond(request,sender,sendResponse) {
   for ( const key of Object.keys(request) ) {
     if ( !api[key] ) continue;
-    console.log(`recieve [${key}] message`);
     const res = await api[key](request[key]);
     sendResponse(res);
     return;

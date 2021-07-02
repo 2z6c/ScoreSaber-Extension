@@ -1,32 +1,3 @@
-[role="button"] {
-  cursor: pointer;
-  color: #4a4a4a;
-  &:hover {
-    color: #3273dc;
-  }
-}
-
-.hidden {
-  display: none!important;
-}
-
-p {
-  margin: 0;
-  padding: 0;
-}
-
-.difficulty-label {
-  text-align: center;
-  color: #fff;
-  border-radius: 4px;
-  width: 68px;
-  margin-right: 8px;
-  font-weight: normal;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: center;
-}
-
 .scoreTop {
   width: 80px;
   > span {

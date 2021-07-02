@@ -259,7 +259,6 @@ async function setupUpdateRankedSongsButton() {
     while ( busy && --limit ) {
       new Promise(r=>setTimeout(r,200));
       busy = (await postToBackground({isBusy:true}))?.busy;
-      console.log(busy);
     }
     button.disabled = false;
   }

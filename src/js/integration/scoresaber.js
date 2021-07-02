@@ -82,7 +82,7 @@ export function getSongStars( hash, diff ) {
  * @param {number} id Player ID
  * @param {'top'|'recent'} order
  */
-export async function* fetchPlayerScore( id, order='recent' ) {
+export async function* fetchPlayerScore( id, order='recent', force=false ) {
   _loading = true;
   for ( let page = 1;; page++ ) {
     console.log('fetch user scores from scoresaber. page ',page);
@@ -95,7 +95,7 @@ export async function* fetchPlayerScore( id, order='recent' ) {
       for ( const score of data.scores ) {
         yield score;
       }
-      if ( data.scores.length < 8 ) break;
+      if ( !force && data.scores.length < 8 ) break;
       await new Promise(r=>setTimeout(r, 300));
     } catch(e) {
       console.error(e);

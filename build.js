@@ -1,4 +1,10 @@
-const watch = process.env.WATCH = !!process.argv[3];
+let watch = false;
+if ( process.env.WATCH = !!process.argv[3] ) watch = {
+  onRebuild(error,result) {
+    if ( error ) console.error('watch build failed:', error);
+    else console.log('watch build succeeded:',result);
+  }
+};
 import esbuild from 'esbuild';
 import {sassPlugin} from 'esbuild-sass-plugin';
 esbuild.build({

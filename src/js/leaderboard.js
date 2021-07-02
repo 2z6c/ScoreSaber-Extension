@@ -48,15 +48,14 @@ function margePlayCount(tr) {
   const total = tr.querySelector('.scores');
   const p24h = tr.querySelector('.percentage');
   total.innerHTML = `
-  <div>
-    <i
-      titile="Played # in 24hrs"
-      class="far fa-clock"
-    ></i>
-    ${p24h.textContent}
+  <div title="Plays (24hrs)">
+    <i class="far fa-clock"></i>
+    <span>${p24h.textContent}</span>
   </div>
-  <div>${total.textContent}</div>
-  `;
+  <div title="Plays">
+    <i class="fas fa-globe"></i>
+    <span>${total.textContent}</span>
+  </div>`;
   p24h.remove();
 }
 
