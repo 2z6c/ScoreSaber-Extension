@@ -137,6 +137,12 @@ export function postToBackground(query) {
   });
 }
 
+export function connectToBackground(name, query) {
+  const port = chrome.runtime.connect({name});
+  port.postMessage({query});
+  return port;
+}
+
 export function downloadJson( obj, filename='playlist' ) {
   const blob = new Blob([JSON.stringify(obj)]);
   const url = URL.createObjectURL(blob);

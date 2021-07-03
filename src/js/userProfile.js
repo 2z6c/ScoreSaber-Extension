@@ -5,11 +5,13 @@ import {
   createMyScore,
   createAccuracyBadge,
   downloadJson,
+  connectToBackground,
 } from './util.js';
 import { getSongStars, loadRankedSongs } from './integration/scoresaber';
 import { favorite } from './favoriteManager';
 // import { snipe } from './snipe.js';
 import { profileManager } from './profileManager.js';
+import { Toast } from './toast.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -102,9 +104,16 @@ function addSnipeButton(title) {
     title="Snipe ${title.textContent.trim()}."
   ></i>`);
   title.nextElementSibling.addEventListener('click',async ()=>{
-    const playlist = await postToBackground({snipe:{targetId:UID}});
-    if ( !playlist ) return;
-    downloadJson(playlist.playlist,playlist.title);
+    const toast = Toast.wait('Generating Playlist...');
+    const port = connectToBackground('snipe', {targetId:UID});
+    port.onMessage.addListener((msg)=>{
+      if ( msg.completed ) {
+        toast.progress(msg.completed/(msg.completed+1));
+      } else if ( msg.playlist ) {
+        downloadJson(msg.playlist,msg.title);
+        toast.close();
+      }
+    });
   });
 }
 
@@ -114,13 +123,15 @@ async function handleFavorite(e) {
     await favorite.remove( UID );
     e.target.classList.replace('fas','far');
   } else {
+    const name = getUserName();
     await favorite.add({
       id: UID,
-      name: getUserName(),
+      name,
       avatar: document.querySelector('.avatar > img').src,
       country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
     });
     e.target.classList.replace('far','fas');
+    Toast.push(`${name} has been added to your favorite.`);
   }
 }
 
@@ -312,6 +323,7 @@ async function init() {
   addButtonExpandChart();
   modifyTableSorter();
   fixPagenation();
+  Toast.initialize();
 }
 
 if ( document.readyState === 'loading' ) {

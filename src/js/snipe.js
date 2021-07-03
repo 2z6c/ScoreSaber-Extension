@@ -3,11 +3,16 @@ import { profileManager } from './profileManager';
 import { scoreManager } from './scoreManager';
 // import { downloadJson } from './util';
 
-export async function snipe( targetId, threshold=20 ) {
+/**
+ * @param {string} targetId target user id
+ * @param {number} threshold minimum pp gap
+ * @param {chrome.runtime.Port} port
+ * @returns {Promise<{playlist,title:string}>}
+ */
+export async function snipe( targetId, threshold = 20, port ) {
   const myProfile = await profileManager.get();
   if ( !myProfile ) return;
   if ( typeof targetId !== 'string' && typeof targetId !== 'number' ) throw new Error(`Invalid target id. ${targetId}`);
-  // const myScores = await scoreManager.getUserScore(myProfile.id);
   const target = await fetchPlayer( targetId );
   const songs = [];
   for await ( const score of fetchPlayerScore( targetId, 'top' ) ) {
@@ -23,9 +28,10 @@ export async function snipe( targetId, threshold=20 ) {
           name: score.difficultyRaw.split('_')[1],
         }]
       });
+      port.postMessage({completed: songs.length});
     }
   }
-  return {
+  port.postMessage({
     playlist: {
       playlistTitle: `Snipe ${target.playerInfo.playerName}`,
       playlistAuthor: (await profileManager.get())?.name || 'ScoreSaber-Extension',
@@ -33,7 +39,8 @@ export async function snipe( targetId, threshold=20 ) {
       songs,
     },
     title: `snipe_${target.playerInfo.playerName}`
-  };
+  });
+  port.disconnect();
 }
 
 async function createPlayerAvatorBase64(url) {

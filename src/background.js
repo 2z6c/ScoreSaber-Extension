@@ -47,9 +47,6 @@ const api = {
     const {accumlatedScores} = await scoreManager.getUser(userId);
     const score = sortPPAsc( await scoreManager.getUserScore(userId));
     return await predictScoreGain( {score,accumlatedScores}, newScore );
-  },
-  async snipe({targetId, threshold=20}) {
-    return await snipe(targetId, threshold);
   }
 };
 
@@ -68,3 +65,16 @@ chrome.runtime.onMessage.addListener((...args)=>{
   return true;
 });
 
+const CONNECTION_API = {
+  async snipe({targetId, threshold=20}, port) {
+    return await snipe(targetId, threshold, port);
+  }
+};
+
+chrome.runtime.onConnect.addListener((port)=>{
+  console.log(`connection [${port.name}] opened.`);
+  if ( !CONNECTION_API[port.name] ) return;
+  port.onMessage.addListener(msg=>{
+    if ( msg.query ) CONNECTION_API[port.name](msg.query, port);
+  });
+});
