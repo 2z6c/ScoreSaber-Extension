@@ -1,5 +1,6 @@
 import { BEATSAVER_API, getMapByHash } from './integration/beatsaver';
 import { bookmark } from './bookmarkManager';
+import { Toast } from './toast';
 
 export const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
@@ -70,6 +71,7 @@ async function handleBookmark(e) {
     await bookmark.remove(hash);
     button.classList.replace('fas','far');
     button.title = 'Add Bookmark';
+    Toast.push(`"${button.dataset.title}" has been removed from your bookmark.`);
   } else {
     let title = button.dataset.title;
     if ( !title ) {
@@ -84,6 +86,7 @@ async function handleBookmark(e) {
     });
     button.classList.replace('far','fas');
     button.title = 'Remove Bookmark';
+    Toast.push(`"${title}" has been added to your bookmark.`);
   }
 }
 

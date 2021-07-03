@@ -10,12 +10,12 @@ const LIFETIME = 5000;
 const FADETIME = 1000;
 
 export class Toast {
-  #progress = 0;
   /** @type {HTMLLIElement} */
   #element;
   /** @type {HTMLElement} */
   #bar;
   constructor( type, message, lifetime = LIFETIME ) {
+    if ( !Toast.#initialized ) Toast.initialize();
     this.type = type;
     this.message = message;
     Toast.list.insertAdjacentHTML('afterbegin', template(type,message));
@@ -36,7 +36,10 @@ export class Toast {
   }
   /** @type {HTMLUListElement} */
   static list;
+  static #initialized = false;
   static initialize() {
+    if ( Toast.#initialized ) return;
+    Toast.#initialized = true;
     Toast.list = document.createElement('ul');
     Toast.list.id = 'toast-list';
     document.body.insertAdjacentElement('beforeend',Toast.list);

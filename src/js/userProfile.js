@@ -119,11 +119,12 @@ function addSnipeButton(title) {
 
 /** @param {MouseEvent} e */
 async function handleFavorite(e) {
+  const name = getUserName();
   if ( await favorite.contains(UID) ) {
     await favorite.remove( UID );
     e.target.classList.replace('fas','far');
+    Toast.push(`${name} has been removed from your favorite.`);
   } else {
-    const name = getUserName();
     await favorite.add({
       id: UID,
       name,
@@ -138,6 +139,7 @@ async function handleFavorite(e) {
 function unsetMyAccount(e) {
   profileManager.unset();
   e.target.closest('h5').classList.remove('my-account');
+  Toast.push(`${getUserName()} is not as your profile now.`);
 }
 
 async function checkMyAccount() {
