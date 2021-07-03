@@ -1,4 +1,4 @@
-import { readStorage } from './storage';
+import { profileManager } from './profileManager';
 import {
   addAction,
   createMyScore,
@@ -11,13 +11,13 @@ async function modifyTable() {
   const tr = document.querySelectorAll('.ranking tr');
   tr[0].insertAdjacentHTML('beforeend',`<th>My Score</th>`);
   tr[0].insertAdjacentHTML('beforeend',`<th>Action</th>`);
-  const user = await readStorage('user');
+  const user = await profileManager.get();
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = extractHash( tr[i].querySelector('img').src );
     margeDifficultyLabel(tr[i]);
     margePlayCount(tr[i]);
     moveMapper(tr[i]);
-    insertMyScore(tr[i],user.id);
+    if ( user ) insertMyScore(tr[i],user.id);
     addAction(tr[i], hash, tr[i].querySelector('a').href);
   }
   document.querySelector('thead th.stars').remove();

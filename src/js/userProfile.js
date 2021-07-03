@@ -1,15 +1,15 @@
 import {
   addAction,
-  clearUserScores,
   postToBackground,
-  // getAccracyRank,
   makeDifficultyLabel,
   createMyScore,
   createAccuracyBadge,
+  downloadJson,
 } from './util.js';
 import { getSongStars, loadRankedSongs } from './integration/scoresaber';
-import { pushStorage, readStorage, removeFavorite, writeStorage } from './storage.js';
-import { snipe } from './snipe.js';
+import { favorite } from './favoriteManager';
+// import { snipe } from './snipe.js';
+import { profileManager } from './profileManager.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -45,7 +45,7 @@ function changeSongRankingLink(tr) {
 }
 
 async function addButtonSetPlayer() {
-  const locked = (await readStorage('user'))?.locked;
+  const locked = (await profileManager.get())?.locked;
   const title = document.querySelector('.title a');
   addSnipeButton(title);
   addFavoriteButton(title);
@@ -70,20 +70,18 @@ async function addButtonSetPlayer() {
 }
 
 async function setMyAccount(e) {
-  await writeStorage('user', {
+  await profileManager.set({
     id: UID,
     name: getUserName(),
     avatar: document.querySelector('.avatar > img').src,
     country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
     locked: true,
   });
-  await clearUserScores();
   e.target.closest('h5').classList.add('my-account');
 }
 
 async function addFavoriteButton(title) {
-  const fav = await readStorage('favorite');
-  const isFav = fav?.some(f=>f.id === UID);
+  const isFav = await favorite.contains(UID);
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-add-favorite"
@@ -104,18 +102,19 @@ function addSnipeButton(title) {
     title="Snipe ${title.textContent.trim()}."
   ></i>`);
   title.nextElementSibling.addEventListener('click',async ()=>{
-    await snipe(UID);
+    const playlist = await postToBackground({snipe:{targetId:UID}});
+    if ( !playlist ) return;
+    downloadJson(playlist.playlist,playlist.title);
   });
 }
 
 /** @param {MouseEvent} e */
 async function handleFavorite(e) {
-  const isFav = (await readStorage('favorite'))?.some(f=>f.id === UID);
-  if ( isFav ) {
-    await removeFavorite( UID );
+  if ( await favorite.contains(UID) ) {
+    await favorite.remove( UID );
     e.target.classList.replace('fas','far');
   } else {
-    await pushStorage('favorite',{
+    await favorite.add({
       id: UID,
       name: getUserName(),
       avatar: document.querySelector('.avatar > img').src,
@@ -126,15 +125,14 @@ async function handleFavorite(e) {
 }
 
 function unsetMyAccount(e) {
-  chrome.storage.local.remove('user');
+  profileManager.unset();
   e.target.closest('h5').classList.remove('my-account');
 }
 
-function checkMyAccount() {
-  const id = UID;
-  chrome.storage.local.get('user',({user})=>{
-    if ( user?.id === id ) document.querySelector('.title.is-5').classList.add('my-account');
-  });
+async function checkMyAccount() {
+  if ( await profileManager.is(UID) ) {
+    document.querySelector('.title.is-5').classList.add('my-account');
+  }
 }
 
 function addButtonExpandChart() {
@@ -219,7 +217,6 @@ function modifyPP(tr) {
 
 async function addComparison(tr,userId) {
   const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
-  // const {id: userId} = await readStorage('user');
   const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
   const td = document.createElement('td');
   const th = tr.querySelector('.score');
@@ -261,7 +258,7 @@ function addStars(tr,hash) {
 
 async function arrangeScoreTable() {
   const tr = document.querySelectorAll('.ranking.songs tr');
-  const user = await readStorage('user');
+  const user = await profileManager.get();
   if ( user ) tr[0].insertAdjacentHTML('beforeend',`<th>${user.name}</th>`);
   tr[0].insertAdjacentHTML('beforeend','<th>Action</th>');
   for ( let i = 1; i < tr.length; i++ ) {

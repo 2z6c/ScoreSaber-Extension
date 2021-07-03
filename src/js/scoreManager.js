@@ -42,7 +42,7 @@ class ScoreManager {
   }
   #createObjectStore(e) {
     this.#db = e.target.result;
-    this.#db.deleteObjectStore(KEY_SCORES);
+    if ( this.#db.version < VERSION ) this.#db.deleteObjectStore(KEY_SCORES);
     const store = this.#db.createObjectStore(KEY_SCORES, {keyPath: ['leaderboardId', 'userId']});
     store.createIndex('leaderboardId', 'leaderboardId', {unique:false});
     store.createIndex('userId', 'userId', {unique:false});

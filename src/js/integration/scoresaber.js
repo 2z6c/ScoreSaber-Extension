@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../types/scoresaber').ScoreSaber.Schema} Schema
+ * @typedef {import('../types/scoresaber').ScoreSaber.Player} Player
  */
 import { initAccumlatedScores, sortPPAsc } from '../scoreComparator';
 import { scoreManager } from '../scoreManager';
@@ -15,6 +16,10 @@ export function isBusy() {
   return _loading;
 }
 
+/**
+ * @param {string} id userId
+ * @returns {Promise<Player>}
+ */
 export async function fetchPlayer( id ) {
   const res = await fetch(`${NEW_API}/player/${id}/full`);
   if ( !res.ok ) return;
@@ -87,8 +92,9 @@ export async function* fetchPlayerScore( id, order='recent', force=false ) {
   for ( let page = 1;; page++ ) {
     console.log('fetch user scores from scoresaber. page ',page);
     try {
-      const res = await fetch(`${NEW_API}/player/${id}/scores/${order}/${page}`);
-      if ( !res.ok ) throw new Error('unreachable to scoresaber.com.');
+      const url = `${NEW_API}/player/${id}/scores/${order}/${page}`;
+      const res = await fetch(url);
+      if ( !res.ok ) throw new Error(`unreachable to ${url}`);
       /** @type {import('../types/scoresaber').ScoreSaber.SchemaScores} */
       const data = await res.json();
       if ( !data || !data.scores ) break;

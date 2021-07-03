@@ -1,10 +1,5 @@
 import { BEATSAVER_API, getMapByHash } from './integration/beatsaver';
-import {
-  pushStorage,
-  writeStorage,
-  readStorage,
-  removeBookmark
-} from './storage';
+import { bookmark } from './bookmarkManager';
 
 export const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
@@ -40,10 +35,7 @@ export async function addSongDownloadButton(parent,hash) {
 }
 
 export async function addBookmarkButton(parent,hash,link) {
-  /** @type {import('./types/storage').Bookmark[]} */
-  const bookmark = await readStorage('bookmark');
-  const index = bookmark?.findIndex(v=>v.hash===hash);
-  const isBookmarked = index >= 0;
+  const isBookmarked = await bookmark.contains(hash);
   parent.insertAdjacentHTML('beforeend',`
   <i
     class="${isBookmarked?'fas':'far'} fa-bookmark"
@@ -55,14 +47,27 @@ export async function addBookmarkButton(parent,hash,link) {
   parent.querySelector('.fa-bookmark').addEventListener('click',handleBookmark);
 }
 
+/**
+ * @param {HTMLElement} el
+ */
+function getDifficultyName(el) {
+  let label = '';
+  if ( location.pathname.startsWith('/u/') ) {
+    label = el.closest('tr').querySelector('.difficulty-label').textContent.trim().split('\n')[0];
+  } else if ( location.pathname.startsWith('/leaderboard/') ) {
+    label = document.querySelector('.is-active').textContent;
+  }
+  return label.replace('+','Plus');
+}
+
 /** @param {MouseEvent} e */
 async function handleBookmark(e) {
   /** @type {HTMLButtonElement} */
   const button = e.currentTarget;
-  const hash = button.dataset.hash;
+  const {hash, link} = button.dataset;
   const isBookmarked = button.classList.contains('fas');
   if ( isBookmarked ) {
-    await removeBookmark(hash);
+    await bookmark.remove(hash);
     button.classList.replace('fas','far');
     button.title = 'Add Bookmark';
   } else {
@@ -72,8 +77,11 @@ async function handleBookmark(e) {
       title = map.metadata.songName;
       button.dataset.title = title;
     }
-    const link = button.dataset.link;
-    await pushStorage('bookmark',{hash,title,link});
+    await bookmark.add({
+      hash, title, link,
+      characteristic: 'Standard',
+      difficultyName: getDifficultyName(button),
+    });
     button.classList.replace('far','fas');
     button.title = 'Remove Bookmark';
   }
@@ -127,12 +135,6 @@ export function postToBackground(query) {
   return new Promise( resolve => {
     chrome.runtime.sendMessage( query, resolve );
   });
-}
-
-export async function clearUserScores() {
-  await writeStorage('lastUpdateUserScores', 0);
-  await writeStorage('scores', {});
-  await postToBackground('updateScores');
 }
 
 export function downloadJson( obj, filename='playlist' ) {

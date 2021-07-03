@@ -5,8 +5,10 @@ import {
   isBusy,
   updateUserScores,
 } from './js/integration/scoresaber';
+import { profileManager } from './js/profileManager';
 import { predictScoreGain, sortPPAsc } from './js/scoreComparator';
 import { scoreManager } from './js/scoreManager';
+import { snipe } from './js/snipe';
 import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/storage';
 
 chrome.runtime.onInstalled.addListener(async ()=>{
@@ -40,11 +42,14 @@ const api = {
     return { updateFinished: Date.now() };
   },
   async predictScore(newScore) {
-    const {id: userId} = await readStorage('user');
+    const {id: userId} = await profileManager.get();
     if ( !userId ) return;
     const {accumlatedScores} = await scoreManager.getUser(userId);
     const score = sortPPAsc( await scoreManager.getUserScore(userId));
     return await predictScoreGain( {score,accumlatedScores}, newScore );
+  },
+  async snipe({targetId, threshold=20}) {
+    return await snipe(targetId, threshold);
   }
 };
 

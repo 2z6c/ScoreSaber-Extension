@@ -1,5 +1,7 @@
+import { profileManager } from './profileManager';
+
 async function addUserIcon() {
-  const {user} = await new Promise(r=>chrome.storage.local.get('user',r));
+  const user = await profileManager.get();
   if ( !user ) return;
   const parent = document.querySelector('.navbar-start');
   parent.insertAdjacentHTML('afterbegin',`
