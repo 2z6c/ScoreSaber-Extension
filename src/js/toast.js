@@ -1,5 +1,5 @@
 const template = (type,message) => `
-<li class="toast toast-${type}">
+<li class="toast toast-${type} toast-enter">
   <div class="toast-progress-bar"></div>
   <div class="toast-body">
     <i class="fas fa-exclamation-circle"></i>
@@ -23,6 +23,9 @@ export class Toast {
     if ( lifetime > 0 ) setTimeout(()=>this.fade(),lifetime);
     this.#element.addEventListener('click',()=>this.close());
     this.#bar = this.#element.querySelector('.toast-progress-bar');
+    setTimeout(() => {
+      this.#element.classList.remove('toast-enter');
+    });
   }
   fade() {
     this.#element.classList.add('toast-burnt');
