@@ -1,7 +1,9 @@
-import { fetchPlayer, fetchPlayerScore } from './integration/scoresaber';
+import {
+  ScoreSaberIntegration,
+  SSUserScoreRequest,
+} from './integration/scoresaber';
 import { profileManager } from './profileManager';
-import { scoreManager } from './scoreManager';
-// import { downloadJson } from './util';
+import { scoreManager } from './db/scoreManager';
 
 /**
  * @param {string} targetId target user id
@@ -13,9 +15,10 @@ export async function snipe( targetId, threshold = 20, port ) {
   const myProfile = await profileManager.get();
   if ( !myProfile ) return;
   if ( typeof targetId !== 'string' && typeof targetId !== 'number' ) throw new Error(`Invalid target id. ${targetId}`);
-  const target = await fetchPlayer( targetId );
+  const target = await ScoreSaberIntegration.getUser(targetId);
   const songs = [];
-  for await ( const score of fetchPlayerScore( targetId, 'top' ) ) {
+  const request = new SSUserScoreRequest( targetId, 'top' );
+  for await ( const score of request.eachScore() ) {
     const myScore = await scoreManager.getScore( myProfile.id, score.leaderboardId );
     if ( score.pp * score.weight < threshold ) break;
     if ( !myScore || score.pp - myScore.pp > threshold ) {

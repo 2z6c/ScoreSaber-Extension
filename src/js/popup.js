@@ -85,7 +85,7 @@ async function updateRankList(e) {
   const button = e.currentTarget;
   button.disabled = true;
   try {
-    await postToBackground({getRanked: {difference:true}});
+    await postToBackground({getRanked: {incremental:true}});
     showHint( 'update-rank-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {
@@ -132,6 +132,7 @@ async function deleteStorageData(e) {
       resolve();
     });
   });
+  await postToBackground({deleteDB:true});
   document.getElementById('deletion-state').textContent = 'Succeed to delete extension data.';
 }
 
@@ -139,16 +140,6 @@ async function setupUpdateRankedSongsButton() {
   const button = document.getElementById('update-ranked-songs');
   button.addEventListener('click', updateRankList);
   document.getElementById('update-user-score').addEventListener('click',updateUserScores);
-  let busy = await postToBackground({isBusy:true});
-  if ( busy ) {
-    button.disabled = true;
-    let limit = 100;
-    while ( busy && --limit ) {
-      new Promise(r=>setTimeout(r,200));
-      busy = (await postToBackground({isBusy:true}))?.busy;
-    }
-    button.disabled = false;
-  }
   setLastUpdate();
 }
 

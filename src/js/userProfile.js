@@ -7,9 +7,7 @@ import {
   downloadJson,
   connectToBackground,
 } from './util.js';
-import { getSongStars, loadRankedSongs } from './integration/scoresaber';
 import { favorite } from './favoriteManager';
-// import { snipe } from './snipe.js';
 import { profileManager } from './profileManager.js';
 import { Toast } from './toast.js';
 
@@ -59,7 +57,7 @@ async function addButtonSetPlayer() {
     title="Set to My Profile."
   ></i>
   `);
-  title.nextElementSibling.addEventListener('click',setMyAccount);
+  title.nextElementSibling.addEventListener('click',setMyProfile);
   title.insertAdjacentHTML('afterend',`
   <i
     id="button-unset-my-account"
@@ -71,7 +69,7 @@ async function addButtonSetPlayer() {
   title.nextElementSibling.addEventListener('click',unsetMyAccount);
 }
 
-async function setMyAccount(e) {
+async function setMyProfile(e) {
   await profileManager.set({
     id: UID,
     name: getUserName(),
@@ -142,7 +140,7 @@ function unsetMyAccount(e) {
   Toast.push(`${getUserName()} is not as your profile now.`);
 }
 
-async function checkMyAccount() {
+async function checkMyProfile() {
   if ( await profileManager.is(UID) ) {
     document.querySelector('.title.is-5').classList.add('my-account');
   }
@@ -202,12 +200,10 @@ function modifyPP(tr) {
   const scoreBottom = td.querySelector('.scoreBottom');
   while ( scoreBottom.previousElementSibling ) scoreBottom.previousElementSibling.remove();
 
-
   const accracy = parseFloat(scoreBottom.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
   let bottomText = 'N/A';
   if ( isNaN(accracy) ) {
     bottomText = scoreBottom.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
-    return;
   } else {
     bottomText = `${accracy.toFixed(2)}%`;
   }
@@ -260,10 +256,10 @@ async function addComparison(tr,userId) {
   //*/
 }
 
-function addStars(tr,hash) {
+async function addStars(tr,hash) {
   const dif = tr.querySelector('span[style^="color"]');
   const diffText = dif.textContent.trim();
-  const star = getSongStars(hash,diffText);
+  const star = await postToBackground({getStar:{hash,diffText}});
   dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
   dif.remove();
   tr.classList.add(star?'ranked-map':'unranked-map');
@@ -311,10 +307,9 @@ function fixPagenation() {
 }
 
 async function init() {
-  await loadRankedSongs();
   arrangeScoreTable();
 
-  checkMyAccount();
+  checkMyProfile();
   changeRankingLink('a[href="/global"]');
   changeRankingLink('a[href^="/global?country="]');
   const trs = document.querySelectorAll('.ranking.songs tbody tr');
