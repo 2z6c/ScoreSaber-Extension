@@ -1,5 +1,7 @@
-import { readStorage, writeStorage } from './storage';
+import { clearStorage, readStorage, writeStorage } from './storage';
+import { postToBackground } from './util';
 /**
+ * @typedef {import('./types/scoresaber').ScoreSaber.Player} Player
  * @typedef {import('./types/storage').User} UserProfile
  */
 const KEY_USER = 'user';
@@ -15,12 +17,27 @@ export const profileManager = {
     return user.id === userId;
   },
   /**
-   * @param {UserProfile} user
+   * @param {Player} user
    * @returns {Promise<void>}
    */
   async set( user ) {
-    if ( await profileManager.is(user.id) ) return;
-    profileManager.clearScores();
+    if (! await profileManager.is(user.playerInfo.playerId) ) profileManager.clearScores();
+    /** @type {UserProfile} */
+    const data = {
+      id: user.playerInfo.playerId,
+      avatar: `https://new.scoresaber.com${user.playerInfo.avatar}`,
+      country: user.playerInfo.country.toLocaleLowerCase(),
+      name: user.playerInfo.playerName,
+      locked: true,
+      lastUpdated: Date.now(),
+      globalRank: user.playerInfo.rank,
+      countryRank: user.playerInfo.countryRank,
+    };
+    return writeStorage(KEY_USER,data);
+  },
+  async onUpdate() {
+    const user = await this.get();
+    user.lastUpdated = Date.now();
     return writeStorage(KEY_USER,user);
   },
   /**
@@ -30,26 +47,20 @@ export const profileManager = {
     return await readStorage(KEY_USER);
   },
   async unset() {
-    chrome.storage.local.remove(KEY_USER);
+    clearStorage(KEY_USER);
   },
   async clearScores() {
     const user = await readStorage(KEY_USER);
     await writeStorage('lastUpdateUserScores', 0);
-    return new Promise( resolve => {
-      chrome.runtime.sendMessage({
-        updateScores: {
-          id: user?.id
-        }
-      }, resolve );
-    });
+    return await postToBackground({updateScores:{id:user?.id}});
   },
   /**
    * @returns {Promise<boolean>} locked state after operation.
    */
-  async lock() {
+  async lock(state) {
     const user = await profileManager.get();
     if ( !user ) return false;
-    user.locked = !user.locked;
+    user.locked = state ?? !user.locked;
     writeStorage(KEY_USER,user);
     return user.locked;
   }

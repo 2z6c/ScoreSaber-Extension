@@ -2,6 +2,7 @@ import {
   getLastUpdate,
   SSUserScoreRequest,
   SSRankedSongsRequest,
+  ScoreSaberIntegration,
 } from './js/integration/scoresaber';
 import { profileManager } from './js/profileManager';
 import { predictScoreGain, sortPPAsc } from './js/scoreComparator';
@@ -26,6 +27,7 @@ const api = {
   async getRanked(query) {
     const request = new SSRankedSongsRequest(query);
     await request.send();
+    request.stop();
     return {updateFinished: Date.now()};
   },
   async getScore({leaderboardId,userId}) {
@@ -34,6 +36,7 @@ const api = {
   async updateScores({id}) {
     const request = new SSUserScoreRequest(id);
     await request.send();
+    request.stop();
     return { updateFinished: Date.now() };
   },
   async predictScore(newScore) {
@@ -51,6 +54,9 @@ const api = {
   async deleteDB() {
     await rankedSongManager.destruct();
     await scoreManager.destruct();
+  },
+  async fetchUser(id) {
+    return ScoreSaberIntegration.getUser(id);
   }
 };
 

@@ -26,7 +26,6 @@ esbuild.build({
   },
   minify: process.argv[2] === 'production',
   sourcemap: process.argv[2] === 'development',
-  target: ['chrome88'],
   watch,
 }).catch(()=>process.exit(1));
 
@@ -60,7 +59,6 @@ esbuild.build({
   },
   minify: process.argv[2] === 'production',
   sourcemap: process.argv[2] === 'development',
-  target: ['chrome88'],
   watch,
 }).catch(()=>process.exit(1));
 

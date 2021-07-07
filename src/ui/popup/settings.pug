@@ -4,8 +4,14 @@ article#Settings.active
     h3 My Profile
     #player-info.form-row
       img#avatar
-      a#user-name(target="_blank")
-      img#country-flag
+      #profile
+        div
+          span#global-rank
+          |  - 
+          img#country-flag
+          span#country-rank
+        a#user-name(target="_blank")
+        span#last-update-user
     .form-row
       input#user-id(
         type="text"
@@ -20,8 +26,6 @@ article#Settings.active
       span Update My Score
       button#update-user-score
         i.fas.fa-sync
-    span Last Update:
-      b#last-update-user Now Loading...
     span.hint#update-scores-hint
   section#ranked-data-section 
     h3 Ranked Map Data

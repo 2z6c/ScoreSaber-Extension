@@ -3,7 +3,7 @@
  * @typedef {import('../types/scoresaber').ScoreSaber.Player} Player
  */
 import { scoreManager } from '../db/scoreManager';
-import { readStorage } from '../storage';
+import { readStorage, writeStorage } from '../storage';
 import { RankedSongManageer } from '../db/rankedSongManager';
 const rankedSongManager = new RankedSongManageer();
 
@@ -13,6 +13,8 @@ const NEW_API = 'https://new.scoresaber.com/api';
 export function getLastUpdate() {
   return readStorage('lastUpdate');
 }
+
+const delay = async (ms) => new Promise(r=>setTimeout(r,ms));
 
 export class ScoreSaberIntegration {
   async updatePlayerScore(id,order,force) {
@@ -30,6 +32,10 @@ export class ScoreSaberIntegration {
     }
     request.stop();
   }
+  /**
+   * @param {number} id
+   * @returns {Promise<Player>}
+   */
   static async getUser(id) {
     const url = `${NEW_API}/player/${id}/full`;
     const request = new ScoreSaberRequest(url);
@@ -39,6 +45,7 @@ export class ScoreSaberIntegration {
 
 export class ScoreSaberRequest {
   #stop = false;
+  #promise;
   constructor(url) {
     this.url = url;
     this.max = 1;
@@ -47,19 +54,21 @@ export class ScoreSaberRequest {
   get progress() {
     return this.current / this.max;
   }
-  static delay(ms=1000) {
-    return new Promise(r=>setTimeout(r,ms));
-  }
+  // static delay(ms=1000) {
+  //   return new Promise(r=>setTimeout(r,ms));
+  // }
   async #send() {
+    console.log('fetch ', this.url);
     const res = await fetch(this.url);
     if ( !res.ok ) throw new Error(`unreachable to ${this.url}`);
     const data = await res.json();
-    const result = await this.callback( data );
-    await ScoreSaberRequest.delay();
-    return result;
+    await delay();
+    return data;
   }
   async send() {
-    return ScoreSaberRequest.queue = ScoreSaberRequest.queue.then(_=>this.#send());
+    return queue = queue.then(_=>{
+      return this.#promise = this.#send();
+    });
   }
   async *#each() {
     try {
@@ -72,20 +81,24 @@ export class ScoreSaberRequest {
         const data = await res.json();
         if ( data ) yield data;
         else break;
-        await ScoreSaberRequest.delay(300);
+        await delay(300);
       }
     } catch(e) {
       console.error(e);
     }
   }
   async each() {
-    return ScoreSaberRequest.queue = ScoreSaberRequest.queue.then(_=>{
-      return this.#each();
+    return queue = queue.then(_=>{
+      return this.#promise = this.#each();
     });
   }
-  stop() { this.#stop = true; }
-  static queue = Promise.resolve();
+  stop() {
+    this.#stop = true;
+    this.#promise.return();
+  }
+  // static queue = Promise.resolve();
 }
+let queue = Promise.resolve();
 
 export class SSUserScoreRequest extends ScoreSaberRequest {
   force = false;
@@ -100,11 +113,12 @@ export class SSUserScoreRequest extends ScoreSaberRequest {
     });
   }
   async *eachScore() {
-    for await ( const {scores} of await this.each() ) {
+    for await ( const {scores} of await super.each() ) {
       if ( !scores ) break;
       yield* scores;
       if ( !this.force && scores.length < 8 ) break;
     }
+    this.stop();
   }
   async send() {
     for await ( const score of this.eachScore() ) {
@@ -131,15 +145,20 @@ export class SSRankedSongsRequest extends ScoreSaberRequest {
       yield* songs;
       if (songs.length < this.#limit) break;
     }
+    this.stop();
   }
   async send() {
     for await ( const song of this.eachSong() ) {
+      console.log(song);
       try {
         await rankedSongManager.add( song );
       } catch (e) {
-        console.error(e);
+        console.error(e, song);
         break;
       }
     }
+    this.stop();
+    console.log('Ranked Songs are Updated.');
+    await writeStorage('lastUpdate', Date.now());
   }
 }

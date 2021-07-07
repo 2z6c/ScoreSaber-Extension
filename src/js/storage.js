@@ -14,6 +14,14 @@ export function readStorage(key) {
   });
 }
 
+export function clearStorage(key) {
+  return new Promise( resolve => {
+    STORAGE.remove(key, () => {
+      resolve();
+    });
+  });
+}
+
 /**
  *
  * @param {string} key

@@ -70,13 +70,8 @@ async function addButtonSetPlayer() {
 }
 
 async function setMyProfile(e) {
-  await profileManager.set({
-    id: UID,
-    name: getUserName(),
-    avatar: document.querySelector('.avatar > img').src,
-    country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
-    locked: true,
-  });
+  const user = await postToBackground({getUser:{id:UID}});
+  await profileManager.set(user);
   e.target.closest('h5').classList.add('my-account');
 }
 

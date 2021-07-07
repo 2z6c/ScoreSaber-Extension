@@ -80,6 +80,7 @@ article {
   }
 }
 
+#update-user-score:disabled i,
 #update-ranked-songs:disabled i {
   animation: Loading 5s linear infinite;
   transform-origin: center center;
@@ -107,6 +108,19 @@ article {
   > :not(:last-child) {
     margin-right: 4px;
   }
+}
+
+#profile {
+  display: flex;
+  flex-flow: column nowrap;
+  margin-left: 4px;
+  flex: 1 0 auto;
+}
+
+#last-update-user {
+  text-align: right;
+  font-size: .9rem;
+  color: gray;
 }
 
 #user-name {

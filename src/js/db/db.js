@@ -8,6 +8,6 @@ export const promisify = request => new Promise( (resolve,reject) => {
     resolve( e.target.result );
   });
   request.addEventListener('error', e=>{
-    reject();
+    reject(e);
   });
 });
