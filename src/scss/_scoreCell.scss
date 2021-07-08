@@ -4,19 +4,21 @@
     display: block;
     text-align: right;
   }
-  &:hover > .raw-pp,
-  &:hover > .user-pp,
-  &:not(:hover) > .weighted-pp,
-  &:not(:hover) > .predicted-pp {
+  &:hover > .normal-value,
+  &:not(:hover) > .hovered-value {
     display: none;
   }
-  border-bottom: 2px solid lightgray;
-  border-image-slice: 1;
+  // border-bottom: 2px solid lightgray;
+  // border-image-slice: 1;
   .unranked-map & {
     text-decoration: line-through;
     font-weight: normal;
     color: lightgray;
   }
+}
+
+.score-separater {
+  margin: 0;
 }
 
 .scoreBottom {

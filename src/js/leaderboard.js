@@ -1,7 +1,8 @@
 import { profileManager } from './profileManager';
+import { ScoreCell } from './renderer/scoreCell';
 import {
   addAction,
-  createMyScore,
+  // createMyScore,
   extractHash,
   makeDifficultyLabel,
   postToBackground,
@@ -9,9 +10,9 @@ import {
 
 async function modifyTable() {
   const tr = document.querySelectorAll('.ranking tr');
-  tr[0].insertAdjacentHTML('beforeend',`<th>My Score</th>`);
-  tr[0].insertAdjacentHTML('beforeend',`<th>Action</th>`);
   const user = await profileManager.get();
+  if ( user ) tr[0].insertAdjacentHTML('beforeend',`<th>My Score</th>`);
+  tr[0].insertAdjacentHTML('beforeend',`<th>Action</th>`);
   for ( let i = 1; i < tr.length; i++ ) {
     const hash = extractHash( tr[i].querySelector('img').src );
     margeDifficultyLabel(tr[i]);
@@ -68,8 +69,9 @@ async function insertMyScore(tr,userId) {
   tr.append(td);
   const leaderboardId = tr.querySelector('a').href.split('/').pop()|0;
   const score = await postToBackground({getScore:{leaderboardId,userId}});
-  const html = await createMyScore(score,leaderboardId);
-  td.insertAdjacentHTML('afterbegin', html);
+  // const html = await createMyScore(score,leaderboardId);
+  // td.insertAdjacentHTML('afterbegin', html);
+  td.append(await ScoreCell.mine(score));
 }
 
 function moveMapper(tr) {

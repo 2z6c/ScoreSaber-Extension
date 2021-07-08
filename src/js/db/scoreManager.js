@@ -68,7 +68,7 @@ class ScoreManager {
    */
   async getUser( userId ) {
     await this.open();
-    const request = this.#db.transaction(KEY_USERS,'readonly').objectStore(KEY_USERS).get(userId);
+    const request = this.#db.transaction(KEY_USERS,'readonly').objectStore(KEY_USERS).index('userId').get(userId);
     const user = await promisify(request);
     this.close();
     return user;

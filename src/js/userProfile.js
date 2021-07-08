@@ -2,14 +2,13 @@ import {
   addAction,
   postToBackground,
   makeDifficultyLabel,
-  createMyScore,
-  createAccuracyBadge,
   downloadJson,
   connectToBackground,
 } from './util.js';
 import { favorite } from './favoriteManager';
 import { profileManager } from './profileManager.js';
 import { Toast } from './toast.js';
+import { ScoreCell } from './renderer/scoreCell.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -70,7 +69,7 @@ async function addButtonSetPlayer() {
 }
 
 async function setMyProfile(e) {
-  const user = await postToBackground({getUser:{id:UID}});
+  const user = await postToBackground({fetchUser:UID});
   await profileManager.set(user);
   e.target.closest('h5').classList.add('my-account');
 }
@@ -188,35 +187,9 @@ function moveMapper(tr) {
 
 function modifyPP(tr) {
   const td = tr.querySelector('.score');
-  const regex = /[0-9.]+(?=pp)/gi;
-  const rawPP = regex.exec(td.textContent)[0];
-  const weightedPP = regex.exec(td.textContent)[0];
-  const w = weightedPP * 100 / rawPP;
-  const scoreBottom = td.querySelector('.scoreBottom');
-  while ( scoreBottom.previousElementSibling ) scoreBottom.previousElementSibling.remove();
-
-  const accracy = parseFloat(scoreBottom.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
-  let bottomText = 'N/A';
-  if ( isNaN(accracy) ) {
-    bottomText = scoreBottom.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
-  } else {
-    bottomText = `${accracy.toFixed(2)}%`;
-  }
-  const badge = accracy ? createAccuracyBadge(accracy) : '';
-  td.innerHTML = `
-  <div style="display:inline-block">
-    <div
-      class="scoreTop"
-      style="border-image-source:linear-gradient(90deg,gold,gold ${w}%,gray ${w}%,gray);"
-    >
-      <span class="raw-pp">${rawPP}pp</span>
-      <span class="weighted-pp">${weightedPP}pp</span>
-    </div>
-    <span class="scoreBottom">
-      ${badge}
-      ${bottomText}
-    </span>
-  </div>`;
+  const cell = ScoreCell.from(td);
+  td.innerText = '';
+  td.appendChild( cell );
 }
 
 async function addComparison(tr,userId) {
@@ -229,7 +202,8 @@ async function addComparison(tr,userId) {
   const score = await postToBackground({getScore: {leaderboardId, userId}});
   if ( score?.pp > targetPP ) td.classList.add('win');
   else th.classList.add('win');
-  td.insertAdjacentHTML('afterbegin', await createMyScore(score,leaderboardId,targetPP));
+  // td.insertAdjacentHTML('afterbegin', await createMyScore(score,leaderboardId,targetPP));
+  td.insertAdjacentElement('afterbegin', await ScoreCell.compare( score, leaderboardId, targetPP ) );
   /*
   if ( !score ) {
     td.style.backgroundImage = makeGradient(-100);

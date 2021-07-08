@@ -11,7 +11,10 @@ article#Settings.active
           img#country-flag
           span#country-rank
         a#user-name(target="_blank")
-        span#last-update-user
+        #profile-update-row
+          span#last-update-user
+          button#update-user-score
+            i.fas.fa-sync
     .form-row
       input#user-id(
         type="text"
@@ -22,10 +25,10 @@ article#Settings.active
           title="Lock"
         )
     span.hint#user-id-hint
-    .form-row
-      span Update My Score
-      button#update-user-score
-        i.fas.fa-sync
+    //- .form-row
+      //- span Update My Score
+      //- button#update-user-score
+      //-   i.fas.fa-sync
     span.hint#update-scores-hint
   section#ranked-data-section 
     h3 Ranked Map Data

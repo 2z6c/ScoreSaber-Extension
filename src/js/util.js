@@ -161,17 +161,6 @@ function safeName(s,...a) {
   return a.reduce((o,t,i)=>o+t+s[i+1],s[0]).replace(/[/\\:*?<>|]/g,'_');
 }
 
-export function getAccracyRank( accuracy ) {
-  if ( accuracy === 100.0 ) return 'SSS';
-  else if ( accuracy >= 90.0 ) return 'SS';
-  else if ( accuracy >= 80.0 ) return 'S';
-  else if ( accuracy >= 65.0 ) return 'A';
-  else if ( accuracy >= 50.0 ) return 'B';
-  else if ( accuracy >= 35.0 ) return 'C';
-  else if ( accuracy >= 20.0 ) return 'D';
-  return 'E';
-}
-
 /**
  * @param {string} text Difficulty label
  * @param {string} color Color code of label (refer to original label)
@@ -183,43 +172,3 @@ export const makeDifficultyLabel = (text,color,star) => `
   <div>${text}</div>
   <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star?.toFixed(2)}</div>
 </div>`;
-
-/**
- * @param {import('./types/database').SongScore|void} score
- * @param {number} targetPP
- */
-export async function createMyScore(score,leaderboardId,targetPP) {
-  const accuracy = score?.accuracy;
-  let gain = 0;
-  if ( targetPP && (score?.pp??0) < targetPP ) {
-    gain = await postToBackground({predictScore:{
-      leaderboardId,
-      pp: targetPP,
-    }});
-    gain = Math.round( gain * 100 ) / 100;
-  }
-  const pp = score ? (Math.round(score.pp * 100) / 100).toFixed(2)+'pp': 'N/A';
-  return `
-  <div>
-    <div
-      class="scoreTop"
-    >
-      <span class="user-pp">${pp}</span>
-      <span
-        class="predicted-pp"
-        title="The predicted PP you will get if you achieve the same score."
-      >+${gain.toFixed(2)}pp</span>
-    </div>
-    <span class="scoreBottom">
-      ${accuracy?createAccuracyBadge(accuracy):''}
-      ${accuracy?accuracy.toFixed(2)+'%':score?score.score.toLocaleString():'N/A'}
-    </span>
-  </div>`;
-}
-
-export function createAccuracyBadge( accuracy ) {
-  const rating = getAccracyRank( accuracy );
-  return `<i
-    class="accuracy-rank-badge rank-${rating}"
-  >${rating}</i>`;
-}

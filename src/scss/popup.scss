@@ -96,6 +96,10 @@ article {
   border-radius: 50%;
 }
 
+#user-id {
+  flex: 1 0 auto;
+}
+
 #lock-user-id {
   width: 32px;
 }
@@ -114,6 +118,7 @@ article {
   display: flex;
   flex-flow: column nowrap;
   margin-left: 4px;
+  margin-bottom: 8px;
   flex: 1 0 auto;
 }
 
@@ -121,6 +126,18 @@ article {
   text-align: right;
   font-size: .9rem;
   color: gray;
+}
+
+#profile-update-row {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#update-user-score {
+  font-size: .8rem;
+  margin-left: 4px;
 }
 
 #user-name {
