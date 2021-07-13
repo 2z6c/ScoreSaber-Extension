@@ -25,8 +25,8 @@ chrome.runtime.onInstalled.addListener(async ()=>{
 
 /** @type {import('./js/types/message').Meggaging.Channel} */
 const api = {
-  async getRanked(query) {
-    const request = new SSRankedSongsRequest(query);
+  async getRanked(incremental) {
+    const request = new SSRankedSongsRequest(incremental);
     await request.send();
     request.stop();
     return {updateFinished: Date.now()};

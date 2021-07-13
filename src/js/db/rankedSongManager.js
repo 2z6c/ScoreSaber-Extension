@@ -47,7 +47,8 @@ export class RankedSongManageer {
       await promisify(request);
     } catch ( e ) {
       if ( e instanceof Error ) throw e;
-      if ( e?.target?.error?.name !== 'ConstraintError' ) throw e?.target?.error;
+      else if ( e?.target?.error?.name !== 'ConstraintError' ) throw e?.target?.error;
+      else return true;
     }
     this.#close();
   }
