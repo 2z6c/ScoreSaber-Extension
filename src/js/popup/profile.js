@@ -1,6 +1,6 @@
 import { profileManager } from '../profileManager';
 import { BASE_URL, ScoreSaberIntegration } from '../integration/scoresaber';
-import { MessageAPI } from '../api/message';
+import { messageAPI } from '../api/message';
 // import { postToBackground } from '../util';
 
 const $ = id => document.getElementById(id);
@@ -76,8 +76,8 @@ export class FormProfile {
     const user = await profileManager.get();
     try {
       this.showHint('Now loading');
-      await MessageAPI.updateScores(user.id);
-      const data = await MessageAPI.fetchUser(user.id);
+      await messageAPI.updateScores(user.id);
+      const data = await messageAPI.fetchUser(user.id);
       await profileManager.set(data);
       await this.render();
       this.showHint('Scceed to update.');

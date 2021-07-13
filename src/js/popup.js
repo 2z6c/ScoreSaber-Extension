@@ -1,4 +1,4 @@
-import { MessageAPI } from './api/message';
+import { messageAPI } from './api/message';
 import {
   getLastUpdate,
 } from './integration/scoresaber';
@@ -24,7 +24,7 @@ async function updateRankList(e) {
   const button = e.target;
   button.disabled = true;
   try {
-    await MessageAPI.getRanked(true);
+    await messageAPI.getRanked(true);
     showHint( 'update-rank-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {
@@ -53,7 +53,7 @@ async function deleteStorageData(e) {
       resolve();
     });
   });
-  await MessageAPI.deleteDB();
+  await messageAPI.deleteDB();
   document.getElementById('deletion-state').textContent = 'Succeed to delete extension data.';
 }
 

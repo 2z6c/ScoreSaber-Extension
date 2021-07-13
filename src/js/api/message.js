@@ -12,7 +12,7 @@ function postToBackground( channel, query) {
 }
 
 /** @type {import('../types/message').Meggaging.Channel} */
-export const MessageAPI = {
+export const messageAPI = {
   getRanked( incremental ) { return postToBackground( 'getRanked', incremental ); },
   getScore( query ) { return postToBackground('getScore',query); },
   getUser( query ) { return postToBackground('getUser',query); },

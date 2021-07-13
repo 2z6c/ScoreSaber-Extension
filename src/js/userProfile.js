@@ -9,7 +9,7 @@ import { favorite } from './favoriteManager';
 import { profileManager } from './profileManager.js';
 import { Toast } from './toast.js';
 import { ScoreCell } from './renderer/scoreCell.js';
-import { MessageAPI } from './api/message.js';
+import { messageAPI } from './api/message.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -72,7 +72,7 @@ async function addButtonSetPlayer() {
 }
 
 async function setMyProfile(e) {
-  const user = await MessageAPI.fetchUser(UID);
+  const user = await messageAPI.fetchUser(UID);
   await profileManager.set(user);
   e.target.closest('h5').classList.add('my-account');
 }
@@ -202,7 +202,7 @@ async function addComparison(tr,userId) {
   const th = tr.querySelector('.score');
   th.insertAdjacentElement('afterend', td);
   td.classList.add('score');
-  const score = await MessageAPI.getScore({leaderboardId, userId});
+  const score = await messageAPI.getScore({leaderboardId, userId});
   if ( score?.pp > targetPP ) td.classList.add('win');
   else th.classList.add('win');
   // td.insertAdjacentHTML('afterbegin', await createMyScore(score,leaderboardId,targetPP));
@@ -231,7 +231,7 @@ async function addComparison(tr,userId) {
 async function addStars(tr,hash) {
   const dif = tr.querySelector('span[style^="color"]');
   const diffText = dif.textContent.trim();
-  const star = await MessageAPI.getStar({hash,diffText});
+  const star = await messageAPI.getStar({hash,diffText});
   dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
   dif.remove();
   tr.classList.add(star?'ranked-map':'unranked-map');

@@ -1,4 +1,4 @@
-import { MessageAPI } from '../api/message';
+import { messageAPI } from '../api/message';
 
 function create(html) {
   const div = document.createElement('div');
@@ -21,7 +21,7 @@ class ScoreCellTop {
   async predict( leaderboardId, targetPP ) {
     let gain = 0;
     if ( this.#pp < targetPP ) {
-      gain = await MessageAPI.predictScore({
+      gain = await messageAPI.predictScore({
         leaderboardId,
         pp: targetPP,
       });

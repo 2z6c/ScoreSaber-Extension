@@ -1,4 +1,4 @@
-import { MessageAPI } from './api/message';
+import { messageAPI } from './api/message';
 import {
   clearStorage,
   readStorage,
@@ -50,11 +50,11 @@ export const profileManager = {
   async get() {
     /** @type {UserProfile} */
     const user = await readStorage(KEY_USER);
-    const score = await MessageAPI.getUser( user.id );
+    const score = await messageAPI.getUser( user.id );
     return Object.assign({}, user, score);
   },
   async getUser( userId ) {
-    return await MessageAPI.getUser( userId );
+    return await messageAPI.getUser( userId );
   },
   async unset() {
     clearStorage(KEY_USER);
@@ -62,7 +62,7 @@ export const profileManager = {
   async clearScores() {
     const user = await readStorage(KEY_USER);
     // await writeStorage('lastUpdateUserScores', 0);
-    return await MessageAPI.updateScores(user?.id);
+    return await messageAPI.updateScores(user?.id);
   },
   /**
    * @returns {Promise<boolean>} locked state after operation.

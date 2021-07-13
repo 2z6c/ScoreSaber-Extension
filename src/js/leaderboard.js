@@ -1,4 +1,4 @@
-import { MessageAPI } from './api/message';
+import { messageAPI } from './api/message';
 import { profileManager } from './profileManager';
 import { ScoreCell } from './renderer/scoreCell';
 import {
@@ -71,7 +71,7 @@ async function insertMyScore(tr,userId) {
   const td = document.createElement('td');
   tr.append(td);
   const leaderboardId = parseInt(tr.querySelector('a').href.split('/').pop());
-  const score = await MessageAPI.getScore({leaderboardId,userId});
+  const score = await messageAPI.getScore({leaderboardId,userId});
   td.append(ScoreCell.mine(score));
 }
 
