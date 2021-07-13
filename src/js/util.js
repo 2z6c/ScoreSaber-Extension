@@ -2,8 +2,17 @@ import { BEATSAVER_API, getMapByHash } from './integration/beatsaver';
 import { bookmark } from './bookmarkManager';
 import { Toast } from './toast';
 
+/**
+ * @typedef {import('./types/storage').DifficultyName} DifficultyName
+ */
+
 export const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
+/**
+ * @param {Element} tr
+ * @param {string} hash
+ * @param {string} link
+ */
 export function addAction(tr,hash,link){
   const td = document.createElement('td');
   td.classList.add('action');
@@ -12,8 +21,11 @@ export function addAction(tr,hash,link){
   addBookmarkButton(td,hash,link);
 }
 
+/**
+ * @param {HTMLElement} parent
+ * @param {string} hash
+ */
 export async function addSongDownloadButton(parent,hash) {
-
   parent.insertAdjacentHTML('beforeend',`
   <i
     class="fas fa-cloud-download-alt oneclick-install"
@@ -35,6 +47,11 @@ export async function addSongDownloadButton(parent,hash) {
   </a>`);
 }
 
+/**
+ * @param {HTMLElement} parent
+ * @param {string} hash
+ * @param {string} link
+ */
 export async function addBookmarkButton(parent,hash,link) {
   const isBookmarked = await bookmark.contains(hash);
   parent.insertAdjacentHTML('beforeend',`
@@ -58,13 +75,12 @@ function getDifficultyName(el) {
   } else if ( location.pathname.startsWith('/leaderboard/') ) {
     label = document.querySelector('.is-active').textContent;
   }
-  return label.replace('+','Plus');
+  return /** @type {DifficultyName} */ (label.replace('+','Plus'));
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target: HTMLButtonElement}} e */
 async function handleBookmark(e) {
-  /** @type {HTMLButtonElement} */
-  const button = e.currentTarget;
+  const button = e.target;
   const {hash, link} = button.dataset;
   const isBookmarked = button.classList.contains('fas');
   if ( isBookmarked ) {
@@ -91,11 +107,10 @@ async function handleBookmark(e) {
 }
 
 /**
- * @param {MouseEvent} e
+ * @param {MouseEvent & {target:HTMLElement}} e
  */
 async function oneClickInstall(e){
-  /** @type {HTMLElement} */
-  const button = e.currentTarget;
+  const button = e.target;
   const hash = button.dataset.hash;
   if ( !hash ) return;
   // button.disabled = true;
@@ -124,6 +139,11 @@ export function extractHash(text) {
   return text.match(/[0-9a-fA-F]{40}/)?.[0];
 }
 
+/**
+ * @param {string} selector
+ * @param {Document|Element} parent
+ * @returns {Promise<Element>}
+ */
 export async function waitElement(selector,parent=document) {
   let el = parent.querySelector(selector);
   let loop = 100;
@@ -134,11 +154,7 @@ export async function waitElement(selector,parent=document) {
   return el;
 }
 
-export function postToBackground(query) {
-  return new Promise( resolve => {
-    chrome.runtime.sendMessage( query, resolve );
-  });
-}
+
 
 export function connectToBackground(name, query) {
   const port = chrome.runtime.connect({name});

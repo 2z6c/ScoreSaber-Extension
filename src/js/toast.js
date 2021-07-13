@@ -15,11 +15,11 @@ export class Toast {
   /** @type {HTMLElement} */
   #bar;
   constructor( type, message, lifetime = LIFETIME ) {
-    if ( !Toast.#initialized ) Toast.initialize();
+    if ( initialized ) Toast.initialize();
     this.type = type;
     this.message = message;
     Toast.list.insertAdjacentHTML('afterbegin', template(type,message));
-    this.#element = Toast.list.firstElementChild;
+    this.#element = /** @type {HTMLLIElement} */ (Toast.list.firstElementChild);
     if ( lifetime > 0 ) setTimeout(()=>this.fade(),lifetime);
     this.#element.addEventListener('click',()=>this.close());
     this.#bar = this.#element.querySelector('.toast-progress-bar');
@@ -39,10 +39,9 @@ export class Toast {
   }
   /** @type {HTMLUListElement} */
   static list;
-  static #initialized = false;
   static initialize() {
-    if ( Toast.#initialized ) return;
-    Toast.#initialized = true;
+    if ( initialized ) return;
+    initialized = true;
     Toast.list = document.createElement('ul');
     Toast.list.id = 'toast-list';
     document.body.insertAdjacentElement('beforeend',Toast.list);
@@ -57,3 +56,5 @@ export class Toast {
     return new Toast('progress', message, 0);
   }
 }
+
+let initialized = false;

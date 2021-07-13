@@ -20,19 +20,19 @@ export async function initFavorite() {
     button.dataset.id = user.id;
     ul.appendChild(li);
   }
-  if ( ul.childElementCount ) ul.nextSibling.classList.add('hidden');
+  if ( ul.childElementCount ) ul.nextElementSibling.classList.add('hidden');
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target:HTMLElement}} e */
 function openUserPage(e) {
-  const link = e.currentTarget.dataset.link;
+  const link = e.target.dataset.link;
   window.open( link, '_blank' );
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target:HTMLElement}} e */
 async function onClickRemoveFavorite(e) {
   e.stopPropagation();
-  const button = e.currentTarget;
+  const button = e.target;
   await favorite.remove( button.dataset.id );
   button.closest('li').remove();
 }

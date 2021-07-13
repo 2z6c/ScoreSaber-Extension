@@ -1,6 +1,6 @@
 import {
   addAction,
-  postToBackground,
+  // postToBackground,
   makeDifficultyLabel,
   downloadJson,
   connectToBackground,
@@ -9,6 +9,7 @@ import { favorite } from './favoriteManager';
 import { profileManager } from './profileManager.js';
 import { Toast } from './toast.js';
 import { ScoreCell } from './renderer/scoreCell.js';
+import { MessageAPI } from './api/message.js';
 
 const UID = location.pathname.match(/\d+/)[0];
 
@@ -18,7 +19,9 @@ function getUserName() {
 }
 
 function getPP() {
-  const pp = document.querySelector('meta[property="og:description"]').content.split('\n')[1];
+  /**@type {HTMLMetaElement} */
+  const meta = document.querySelector('meta[property="og:description"]');
+  const pp = meta.content.split('\n')[1];
   return pp.replace(/[^0-9,.]/g, '').replace(',','%2c');
 }
 
@@ -38,7 +41,7 @@ function changeSongRankingLink(tr) {
   const pp = tr.querySelector('.ppValue').textContent + 'pp';
   const rank = textRank.replace(/[^\d]/g,'')|0;
   const href = new URL(a.getAttribute('href'), location.origin);
-  href.searchParams.append('page', Math.ceil(rank/12));
+  href.searchParams.append('page', `${Math.ceil(rank/12)}`);
   const highlight = textRank.replace(',','%2c');
   a.setAttribute('href',`${href}#:~:text=${highlight},${pp}`);
 }
@@ -69,7 +72,7 @@ async function addButtonSetPlayer() {
 }
 
 async function setMyProfile(e) {
-  const user = await postToBackground({fetchUser:UID});
+  const user = await MessageAPI.fetchUser(UID);
   await profileManager.set(user);
   e.target.closest('h5').classList.add('my-account');
 }
@@ -109,7 +112,7 @@ function addSnipeButton(title) {
   });
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target:HTMLElement}} e */
 async function handleFavorite(e) {
   const name = getUserName();
   if ( await favorite.contains(UID) ) {
@@ -120,8 +123,8 @@ async function handleFavorite(e) {
     await favorite.add({
       id: UID,
       name,
-      avatar: document.querySelector('.avatar > img').src,
-      country: document.querySelector('a[href*="country"]').href.match(/(?<=country=)../)[0],
+      avatar: document.querySelector('.avatar > img').getAttribute('src'),
+      country: document.querySelector('a[href*="country"]').getAttribute('href').match(/(?<=country=)../)[0],
     });
     e.target.classList.replace('far','fas');
     Toast.push(`${name} has been added to your favorite.`);
@@ -155,11 +158,11 @@ function addButtonExpandChart() {
 
 let isChartExpanded = false;
 /**
- * @param {MouseEvent} e
+ * @param {MouseEvent & {target:HTMLElement}} e
  */
 function expandChart(e) {
-  const i = e.currentTarget;
-  const chart = i.parentNode;
+  const i = e.target;
+  const chart = i.parentElement;
   chart.style.height = isChartExpanded?'':'500px';
   isChartExpanded = !isChartExpanded;
   if ( isChartExpanded ) i.classList.replace('fa-expand','fa-compress');
@@ -193,13 +196,13 @@ function modifyPP(tr) {
 }
 
 async function addComparison(tr,userId) {
-  const leaderboardId = new URL(tr.querySelector('.song a').href).pathname.split('/').pop() | 0;
-  const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent));
+  const leaderboardId = parseInt(new URL(tr.querySelector('.song a').href).pathname.split('/').pop());
+  const targetPP = parseFloat(/[\d.]+(?=pp)/.exec(tr.querySelector('.score').textContent)[0]);
   const td = document.createElement('td');
   const th = tr.querySelector('.score');
   th.insertAdjacentElement('afterend', td);
   td.classList.add('score');
-  const score = await postToBackground({getScore: {leaderboardId, userId}});
+  const score = await MessageAPI.getScore({leaderboardId, userId});
   if ( score?.pp > targetPP ) td.classList.add('win');
   else th.classList.add('win');
   // td.insertAdjacentHTML('afterbegin', await createMyScore(score,leaderboardId,targetPP));
@@ -228,13 +231,14 @@ async function addComparison(tr,userId) {
 async function addStars(tr,hash) {
   const dif = tr.querySelector('span[style^="color"]');
   const diffText = dif.textContent.trim();
-  const star = await postToBackground({getStar:{hash,diffText}});
+  const star = await MessageAPI.getStar({hash,diffText});
   dif.closest('div').insertAdjacentHTML('beforebegin',makeDifficultyLabel(diffText,dif.style.color,star));
   dif.remove();
   tr.classList.add(star?'ranked-map':'unranked-map');
 }
 
 async function arrangeScoreTable() {
+  /** @type {NodeListOf<HTMLTableRowElement>} */
   const tr = document.querySelectorAll('.ranking.songs tr');
   const user = await profileManager.get();
   if ( user ) tr[0].insertAdjacentHTML('beforeend',`<th>${user.name}</th>`);
@@ -255,7 +259,7 @@ async function arrangeScoreTable() {
 const SORT_TYPE = ['','Top Scores','Recent Scores'];
 function modifyTableSorter() {
   const select = document.querySelector('.select');
-  const currentSortType = new URLSearchParams(location.search).get('sort') || 1;
+  const currentSortType = parseInt( new URLSearchParams(location.search).get('sort') ) || 1;
   select.insertAdjacentHTML('beforebegin',`
   <div id="score-header">
     <h2>${SORT_TYPE[currentSortType]}</h2>
@@ -269,6 +273,7 @@ function modifyTableSorter() {
 }
 
 function fixPagenation() {
+  /** @type {NodeListOf<HTMLAnchorElement>} */
   const links = document.querySelectorAll('.pagination a');
   for ( const a of links ) {
     a.href = a.href.replace('&','?');

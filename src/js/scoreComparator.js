@@ -33,7 +33,10 @@ export function sortPPAsc( scores ) {
  * @property {SongScore[]} score
  * @property {number[]} accumlatedScores
  * @param {User} user
- * @param {SongScore} newScore
+ * @typedef Score
+ * @property {number} leaderboardId
+ * @property {number} pp
+ * @param {Score} newScore
  * @returns {Promise<number>}
  */
 export async function predictScoreGain( user, newScore ) {

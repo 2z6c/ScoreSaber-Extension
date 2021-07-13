@@ -7,7 +7,7 @@ export type SongScore = {
 }
 
 export type UserScore = {
-  userId: number;
+  userId: string;
   lastUpdated: number;
   accumlatedScores: number[];
 }

@@ -1,3 +1,4 @@
+import { MessageAPI } from './api/message';
 import { profileManager } from './profileManager';
 import { ScoreCell } from './renderer/scoreCell';
 import {
@@ -5,10 +6,11 @@ import {
   // createMyScore,
   extractHash,
   makeDifficultyLabel,
-  postToBackground,
+  // postToBackground,
 } from './util';
 
 async function modifyTable() {
+  /** @type {NodeListOf<HTMLTableRowElement>} */
   const tr = document.querySelectorAll('.ranking tr');
   const user = await profileManager.get();
   if ( user ) tr[0].insertAdjacentHTML('beforeend',`<th>My Score</th>`);
@@ -30,6 +32,7 @@ async function modifyTable() {
  * @param {HTMLTableRowElement} tr
  */
 function margeDifficultyLabel(tr) {
+  /** @type {HTMLElement} */
   const dif = tr.querySelector('.difficulty span');
   const star = tr.querySelector('.stars center');
   const color = dif.style.color;
@@ -62,16 +65,14 @@ function margePlayCount(tr) {
 
 /**
  * @param {HTMLTableRowElement} tr
- * @param {number} userId
+ * @param {string} userId
  */
 async function insertMyScore(tr,userId) {
   const td = document.createElement('td');
   tr.append(td);
-  const leaderboardId = tr.querySelector('a').href.split('/').pop()|0;
-  const score = await postToBackground({getScore:{leaderboardId,userId}});
-  // const html = await createMyScore(score,leaderboardId);
-  // td.insertAdjacentHTML('afterbegin', html);
-  td.append(await ScoreCell.mine(score));
+  const leaderboardId = parseInt(tr.querySelector('a').href.split('/').pop());
+  const score = await MessageAPI.getScore({leaderboardId,userId});
+  td.append(ScoreCell.mine(score));
 }
 
 function moveMapper(tr) {

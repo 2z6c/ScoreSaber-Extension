@@ -8,7 +8,7 @@ import { profileManager } from './js/profileManager';
 import { predictScoreGain, sortPPAsc } from './js/scoreComparator';
 import { scoreManager } from './js/db/scoreManager';
 import { snipe } from './js/snipe';
-import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/storage';
+import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/api/storage';
 import { RankedSongManageer } from './js/db/rankedSongManager';
 const rankedSongManager = new RankedSongManageer();
 
@@ -23,6 +23,7 @@ chrome.runtime.onInstalled.addListener(async ()=>{
   if ( !await readStorage(KEY_BOOKMARK) ) await writeStorage(KEY_BOOKMARK, []);
 });
 
+/** @type {import('./js/types/message').Meggaging.Channel} */
 const api = {
   async getRanked(query) {
     const request = new SSRankedSongsRequest(query);
@@ -33,14 +34,19 @@ const api = {
   async getScore({leaderboardId,userId}) {
     return await scoreManager.getScore(userId,leaderboardId);
   },
-  async updateScores({id}) {
-    const request = new SSUserScoreRequest(id);
+  async getUser( userId ) {
+    return await scoreManager.getUser( userId );
+  },
+  async updateScores( userId ) {
+    const request = new SSUserScoreRequest( userId );
     await request.send();
     request.stop();
     return { updateFinished: Date.now() };
   },
   async predictScore(newScore) {
-    const {id: userId} = await profileManager.get();
+    const user = await profileManager.get();
+    if ( !user ) return 0;
+    const {id: userId} = user;
     if ( !userId ) return;
     const {accumlatedScores} = await scoreManager.getUser(userId);
     const score = sortPPAsc( await scoreManager.getUserScore(userId));
@@ -60,14 +66,20 @@ const api = {
   }
 };
 
+/**
+ * @typedef Request
+ * @property {string} name
+ * @property {*} query
+ * @param {Request} request
+ */
 async function asyncRespond(request,sender,sendResponse) {
-  for ( const key of Object.keys(request) ) {
-    if ( !api[key] ) continue;
-    const res = await api[key](request[key]);
-    sendResponse(res);
+  if ( !api[request.name] ) {
+    console.log('no message is responded.', request);
     return;
   }
-  console.log('no message is responded.', request);
+  const res = await api[request.name](request.query);
+  sendResponse(res);
+  return;
 }
 
 chrome.runtime.onMessage.addListener((...args)=>{

@@ -1,7 +1,8 @@
+import { MessageAPI } from './api/message';
 import {
   getLastUpdate,
 } from './integration/scoresaber';
-import { postToBackground } from './util';
+// import { postToBackground } from './util';
 import { initBookmark } from './popup/bookmark';
 import { initFavorite } from './popup/favorite';
 import { FormProfile } from './popup/profile';
@@ -18,13 +19,12 @@ async function setLastUpdate() {
   b.textContent = text ? new Date(text).toLocaleString() : 'Now Loading...';
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target:HTMLButtonElement}} e */
 async function updateRankList(e) {
-  /** @type {HTMLButtonElement} */
-  const button = e.currentTarget;
+  const button = e.target;
   button.disabled = true;
   try {
-    await postToBackground({getRanked: {incremental:true}});
+    await MessageAPI.getRanked(true);
     showHint( 'update-rank-hint', 'Scceed to update.');
     await setLastUpdate();
   } catch(e) {
@@ -35,7 +35,7 @@ async function updateRankList(e) {
   }
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {currentTarget:HTMLElement}} e */
 function changeTab(e) {
   document.querySelectorAll('.active').forEach(el=>{
     el.classList.remove('active');
@@ -45,15 +45,15 @@ function changeTab(e) {
   document.getElementById(tab.title).classList.add('active');
 }
 
-/** @param {MouseEvent} e */
+/** @param {MouseEvent & {target:HTMLButtonElement}} e */
 async function deleteStorageData(e) {
-  e.currentTarget.disabled = true;
+  e.target.disabled = true;
   await new Promise(resolve=>{
     chrome.storage.local.clear(()=>{
       resolve();
     });
   });
-  await postToBackground({deleteDB:true});
+  await MessageAPI.deleteDB();
   document.getElementById('deletion-state').textContent = 'Succeed to delete extension data.';
 }
 

@@ -21,7 +21,6 @@ export type DifficultyName = 'Easy'
 
 export interface User extends Favorite {
   locked: boolean;
-  lastUpdated: number;
   globalRank: number;
   countryRank: number;
 }

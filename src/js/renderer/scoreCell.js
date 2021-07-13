@@ -1,4 +1,4 @@
-import { postToBackground } from '../util';
+import { MessageAPI } from '../api/message';
 
 function create(html) {
   const div = document.createElement('div');
@@ -7,11 +7,12 @@ function create(html) {
 }
 
 class ScoreCellTop {
-  #pp;
+  #pp = 0;
   title = 'The predicted PP you will get if you achieve the same score.';
   value = ['N/A','N/A'];
   set pp( pp ) {
-    this.#pp = pp;
+    if ( isNaN(pp) ) return;
+    this.#pp = parseFloat(pp);
     this.value[0] = (Math.round(pp * 100) / 100).toFixed(2)+'pp';
   }
   set sub(text) {
@@ -20,10 +21,10 @@ class ScoreCellTop {
   async predict( leaderboardId, targetPP ) {
     let gain = 0;
     if ( this.#pp < targetPP ) {
-      gain = await postToBackground({predictScore:{
+      gain = await MessageAPI.predictScore({
         leaderboardId,
         pp: targetPP,
-      }});
+      });
       gain = Math.round( gain * 100 ) / 100;
     }
     this.value[1] = `+${gain.toFixed(2)}pp`;
@@ -109,8 +110,8 @@ export class ScoreCell {
   static from( td ) {
     const cell = new ScoreCell();
     const regex = /[0-9.]+(?=pp)/gi;
-    const rawPP = regex.exec(td.textContent)[0];
-    const weightedPP = regex.exec(td.textContent)[0];
+    const rawPP = parseFloat(regex.exec(td.textContent)[0]);
+    const weightedPP = parseFloat(regex.exec(td.textContent)[0]);
 
     cell.top.pp = rawPP;
     cell.top.sub = `${weightedPP}pp`;

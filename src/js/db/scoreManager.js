@@ -44,9 +44,10 @@ class ScoreManager {
     console.log('database updated');
   }
   /**
-   * @param {import('../types/scoresaber').ScoreSaber.Song} raw
+   * @param {import('../types/scoresaber').ScoreSaber.Score} raw
+   * @param {string} userId
    */
-  async addScore( raw ) {
+  async addScore( userId, raw ) {
     const accuracy = raw.maxScore
       ? raw.score * 100 / raw.maxScore
       : void 0;
@@ -54,7 +55,7 @@ class ScoreManager {
     console.log(raw);
     const putReq = this.#db.transaction(KEY_SCORES,'readwrite').objectStore(KEY_SCORES).put({
       leaderboardId: raw.leaderboardId,
-      userId: `${raw.uid}`,
+      userId,
       score: raw.score,
       pp: raw.pp,
       accuracy,
@@ -63,18 +64,19 @@ class ScoreManager {
     this.close();
   }
   /**
-   * @param {number} userId
+   * @param {string} userId
    * @returns {Promise<UserScore>}
    */
   async getUser( userId ) {
     await this.open();
-    const request = this.#db.transaction(KEY_USERS,'readonly').objectStore(KEY_USERS).index('userId').get(userId);
+    const request = this.#db.transaction(KEY_USERS,'readonly').objectStore(KEY_USERS).get(userId);
     const user = await promisify(request);
     this.close();
     return user;
   }
   /**
-   * @returns {Promise<unknown>}
+   * @returns {Promise<void>}
+   * @param {string} userId
    */
   async updateUser( userId ) {
     const user = {
@@ -88,7 +90,7 @@ class ScoreManager {
     this.close();
   }
   /**
-   * @param {number} userId
+   * @param {string} userId
    * @returns {Promise<SongScore[]>}
    */
   async getUserScore( userId ) {
@@ -101,8 +103,8 @@ class ScoreManager {
   }
 
   /**
-   * @param {number} userId
-   * @returns {Promise<SongScore[]>}
+   * @param {string} userId
+   * @returns {Promise<SongScore>}
    */
   async getScore( userId, leaderboardId ) {
     await this.open();

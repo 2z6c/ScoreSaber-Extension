@@ -1,10 +1,11 @@
 const STORAGE = chrome.storage.local;
 export const KEY_FAVORITE = 'favorite';
 export const KEY_BOOKMARK = 'bookmark';
+export const KEY_USER_ID = 'userId';
 
 /**
  * @param {string} key
- * @returns {Promise<unknown>}
+ * @returns {Promise<*>}
  */
 export function readStorage(key) {
   return new Promise( resolve => {
@@ -41,8 +42,8 @@ export async function writeStorage( key, value ) {
 }
 
 /**
- * @typedef {import("./types/storage").Favorite} Favorite
- * @typedef {import("./types/storage").Bookmark} Bookmark
+ * @typedef {import("../types/storage").Favorite} Favorite
+ * @typedef {import("../types/storage").Bookmark} Bookmark
  *
  * @param {'favorite'|'bookmark'} key
  * @param {Favorite|Bookmark} value
@@ -74,7 +75,7 @@ export async function removeFavorite( id ) {
 
 /**
  *
- * @param {string|number} id player id
+ * @param {string|number} hash
  * @returns {Promise<boolean>}
  */
  export async function removeBookmark( hash ) {

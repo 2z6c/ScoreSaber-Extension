@@ -6,7 +6,7 @@ import {
 
 window.addEventListener('load',()=>{
   const wrapper = document.querySelector('.column.is-one-quarter');
-  const hash = extractHash( wrapper.firstElementChild.src );
+  const hash = extractHash( wrapper.firstElementChild.getAttribute('src'));
   wrapper.insertAdjacentHTML('beforeend',`
   <div id="song-action-panel"></div>
   `);

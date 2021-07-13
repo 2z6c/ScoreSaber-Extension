@@ -1,6 +1,6 @@
-import { KEY_FAVORITE, pushStorage, readStorage, removeFavorite } from './storage';
+import { KEY_FAVORITE, pushStorage, readStorage, removeFavorite } from './api/storage';
 /**
- * @typedef {import('./storage').Favorite} Favorite
+ * @typedef {import('./api/storage').Favorite} Favorite
  */
 
 export const favorite = {

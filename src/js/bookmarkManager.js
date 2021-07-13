@@ -3,7 +3,7 @@ import {
   pushStorage,
   readStorage,
   removeBookmark,
-} from './storage';
+} from './api/storage';
 
 /**
  * @typedef {import('./types/storage').Bookmark} Bookmark

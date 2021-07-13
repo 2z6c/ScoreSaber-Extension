@@ -3,8 +3,9 @@
  * @typedef {import('../types/scoresaber').ScoreSaber.Player} Player
  */
 import { scoreManager } from '../db/scoreManager';
-import { readStorage, writeStorage } from '../storage';
+import { readStorage, writeStorage } from '../api/storage';
 import { RankedSongManageer } from '../db/rankedSongManager';
+import { profileManager } from '../profileManager';
 const rankedSongManager = new RankedSongManageer();
 
 export const BASE_URL = 'https://scoresaber.com';
@@ -14,18 +15,28 @@ export function getLastUpdate() {
   return readStorage('lastUpdate');
 }
 
-const delay = async (ms) => new Promise(r=>setTimeout(r,ms));
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+const delay = async (ms=300) => new Promise(r=>setTimeout(r,ms));
 
 export class ScoreSaberIntegration {
+  /**
+   * @param {string} id
+   * @param {'top'|'recent'} order
+   * @param {boolean} [force]
+   */
   async updatePlayerScore(id,order,force) {
     const url = `${NEW_API}/player/${id}/scores/${order}/`;
     const request = new ScoreSaberRequest(url);
-    for await ( const {scores} of request.each() ) {
+    const lastUpdated = new Date((await profileManager.get())?.lastUpdated);
+    for await ( const {scores} of await request.each() ) {
       if ( !scores ) break;
       request.max += scores.length;
       for ( const score of scores ) {
-        if ( new Date(score.timeSet) < this.lastUpdated ) break;
-        await scoreManager.addScore(score);
+        if ( new Date(score.timeSet) < lastUpdated ) break;
+        await scoreManager.addScore( id, score );
         request.current++;
       }
       if ( !force && scores.length < 8 ) break;
@@ -33,7 +44,7 @@ export class ScoreSaberIntegration {
     request.stop();
   }
   /**
-   * @param {number} id
+   * @param {string} id
    * @returns {Promise<Player>}
    */
   static async getUser(id) {
@@ -54,9 +65,6 @@ export class ScoreSaberRequest {
   get progress() {
     return this.current / this.max;
   }
-  // static delay(ms=1000) {
-  //   return new Promise(r=>setTimeout(r,ms));
-  // }
   async #send() {
     console.log('fetch ', this.url);
     const res = await fetch(this.url);
@@ -87,6 +95,9 @@ export class ScoreSaberRequest {
       console.error(e);
     }
   }
+  /**
+   * @returns {Promise<AsyncGenerator>}
+   */
   async each() {
     return queue = queue.then(_=>{
       return this.#promise = this.#each();
@@ -98,18 +109,22 @@ export class ScoreSaberRequest {
   }
   // static queue = Promise.resolve();
 }
+/** @type {Promise<*>} */
 let queue = Promise.resolve();
 
 export class SSUserScoreRequest extends ScoreSaberRequest {
   force = false;
-  lastUpdated = 0;
+  lastUpdated = new Date(0);
+  /**
+   * @param {string} id
+   */
   constructor(id,order='recent'){
     super(`${NEW_API}/player/${id}/scores/${order}/`);
     this.userId = id;
     this.order = order;
     scoreManager.getUser(id).then( user => {
       if ( !user ) return;
-      this.lastUpdated = user.lastUpdated;
+      this.lastUpdated = new Date(user.lastUpdated);
     });
   }
   async *eachScore() {
@@ -123,7 +138,7 @@ export class SSUserScoreRequest extends ScoreSaberRequest {
   async send() {
     for await ( const score of this.eachScore() ) {
       if ( new Date(score.timeSet) < this.lastUpdated ) break;
-      await scoreManager.addScore(score);
+      await scoreManager.addScore( this.userId, score );
     }
     await scoreManager.updateUser( this.userId );
     console.log(`user scores have been updated.`);

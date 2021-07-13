@@ -36,15 +36,15 @@ const SEARCH_MODE = [{
 
 let searchMode = 1;
 /**
- * @param {MouseEvent} e
+ * @param {MouseEvent & {currentTarget:HTMLButtonElement}} e
  */
 function toggleSearchMode(e) {
-  searchMode = 0|!searchMode;
+  searchMode ^= 1;
   const mode = SEARCH_MODE[searchMode];
   const button = e.currentTarget;
   const form = button.closest('form');
   button.setAttribute('title',mode.placeholder);
-  button.classList.replace(`fa-${SEARCH_MODE[0|!searchMode].icon}`,`fa-${mode.icon}`);
+  button.classList.replace(`fa-${SEARCH_MODE[1^searchMode].icon}`,`fa-${mode.icon}`);
   form.setAttribute('action',mode.action);
   const input = form.querySelector('input[name=search]');
   input.setAttribute('placeholder',mode.placeholder);
@@ -66,8 +66,8 @@ function modifySearchForm() {
   button.insertAdjacentHTML('beforeend','<i class="fas fa-search"></i>');
   const action = form.getAttribute('action');
   if ( action ) SEARCH_MODE[1].action = action;
-  searchMode = (!!action)|0;
-  button.parentNode.insertAdjacentHTML('beforebegin',makeSearchSwitcher(SEARCH_MODE[searchMode]));
+  searchMode = action ? 1 : 0;
+  button.parentElement.insertAdjacentHTML('beforebegin',makeSearchSwitcher(SEARCH_MODE[searchMode]));
   const toggle = form.querySelector('i');
   toggle.addEventListener('click',toggleSearchMode);
 }

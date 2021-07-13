@@ -1,27 +1,35 @@
-import { clearStorage, readStorage, writeStorage } from './storage';
-import { postToBackground } from './util';
+import { MessageAPI } from './api/message';
+import {
+  clearStorage,
+  readStorage,
+  writeStorage,
+  // KEY_USER_ID
+} from './api/storage';
+// import { postToBackground } from './util';
 /**
  * @typedef {import('./types/scoresaber').ScoreSaber.Player} Player
  * @typedef {import('./types/storage').User} UserProfile
+ * @typedef {import('./types/database').UserScore} UserScore
  */
 const KEY_USER = 'user';
 
 export const profileManager = {
-  /**
-   * @param {string} userId
-   * @returns {Promise<boolean>}
-   */
-  async is( userId ) {
-    const user = await readStorage(KEY_USER);
-    if ( !user ) return false;
-    return user.id === userId;
+  async is( userId) {
+    const current = await readStorage(KEY_USER);
+    return parseInt(current.id) !== userId;
   },
   /**
    * @param {Player} user
    * @returns {Promise<void>}
    */
   async set( user ) {
-    if (! await profileManager.is(user.playerInfo.playerId) ) profileManager.clearScores();
+    /** @type {import('./types/storage').User} */
+    const current = await readStorage(KEY_USER);
+    const u = await this.getUser( user.playerInfo.playerId );
+    if ( current.id !== u.userId ) {
+      console.log(`User profile has been changed. ${current.id} => ${u.userId}`);
+      profileManager.clearScores();
+    }
     /** @type {UserProfile} */
     const data = {
       id: user.playerInfo.playerId,
@@ -29,30 +37,32 @@ export const profileManager = {
       country: user.playerInfo.country.toLocaleLowerCase(),
       name: user.playerInfo.playerName,
       locked: true,
-      lastUpdated: Date.now(),
+      // lastUpdated: Date.now(),
       globalRank: user.playerInfo.rank,
       countryRank: user.playerInfo.countryRank,
     };
+
     return writeStorage(KEY_USER,data);
   },
-  async onUpdate() {
-    const user = await this.get();
-    user.lastUpdated = Date.now();
-    return writeStorage(KEY_USER,user);
-  },
   /**
-   * @returns {Promise<UserProfile|void>}
+   * @returns {Promise<UserProfile & UserScore>}
    */
   async get() {
-    return await readStorage(KEY_USER);
+    /** @type {UserProfile} */
+    const user = await readStorage(KEY_USER);
+    const score = await MessageAPI.getUser( user.id );
+    return Object.assign({}, user, score);
+  },
+  async getUser( userId ) {
+    return await MessageAPI.getUser( userId );
   },
   async unset() {
     clearStorage(KEY_USER);
   },
   async clearScores() {
     const user = await readStorage(KEY_USER);
-    await writeStorage('lastUpdateUserScores', 0);
-    return await postToBackground({updateScores:{id:user?.id}});
+    // await writeStorage('lastUpdateUserScores', 0);
+    return await MessageAPI.updateScores(user?.id);
   },
   /**
    * @returns {Promise<boolean>} locked state after operation.

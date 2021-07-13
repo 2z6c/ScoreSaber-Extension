@@ -10,10 +10,11 @@ export class RankedSongManageer {
   #db;
   async #open() {
     const request = indexedDB.open('rankedSongs',VERSION);
-    request.addEventListener('upgradeneeded', e=> {
+    const upgrade = e => {
       console.log(e.target.result);
       this.#createObjectStore(e);
-    });
+    };
+    request.addEventListener('upgradeneeded', upgrade );
     this.#db = await promisify(request);
   }
   #close() {
@@ -42,7 +43,12 @@ export class RankedSongManageer {
       leaderboardId: raw.uid,
     };
     const request = this.#db.transaction(KEY,'readwrite').objectStore(KEY).add(song);
-    await promisify(request);
+    try {
+      await promisify(request);
+    } catch ( e ) {
+      if ( e instanceof Error ) throw e;
+      if ( e?.target?.error?.name !== 'ConstraintError' ) throw e?.target?.error;
+    }
     this.#close();
   }
   async get( hash, diff ) {

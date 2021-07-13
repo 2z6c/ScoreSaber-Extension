@@ -4,9 +4,13 @@
  * @returns {Promise<T>}
  */
 export const promisify = request => new Promise( (resolve,reject) => {
-  request.addEventListener('success',e=>{
+  /**
+   * @param {Event & {target:{result:T}}} e
+   */
+  const onSuccess = e=>{
     resolve( e.target.result );
-  });
+  };
+  request.addEventListener('success',onSuccess);
   request.addEventListener('error', e=>{
     reject(e);
   });
