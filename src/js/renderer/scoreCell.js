@@ -59,7 +59,6 @@ class ScoreCellSeparator {
   compare( base, target ) {
     if ( !base ) base = 100;
     const v = ( target - base ) * 100 / base;
-    console.log( base, target, v );
     if ( v < 0 ) {
       this.color[0] = 'lightgreen';
       this.guage( -v );

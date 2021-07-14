@@ -19,6 +19,17 @@ function extractRowData( tr ) {
   if ( score ) tr.dataset.score = score.replace(/[^\d]/g,'');
 }
 
+/**
+ * @param {HTMLTableRowElement} tr
+ */
+function fixImageLink(tr) {
+  const img = tr.querySelector('img');
+  const hash = tr.dataset.hash;
+  if ( /[a-z]/.test(hash) ) {
+    img.src = img.src.replace( hash.toLowerCase(), hash.toUpperCase() );
+  }
+}
+
 async function addStars(tr,hash) {
   const dif = tr.querySelector('span[style^="color"]');
   const diffText = dif.textContent.trim();
@@ -101,6 +112,7 @@ export async function arrangeScoreTable() {
     extractRowData(tr[i]);
     const hash = tr[i].dataset.hash;
 
+    fixImageLink(tr[i]);
     addStars(tr[i], hash);
     moveMapper(tr[i]);
     modifyPP(tr[i]);
