@@ -4,10 +4,6 @@
     display: block;
     text-align: right;
   }
-  &:hover > .normal-value,
-  &:not(:hover) > .hovered-value {
-    display: none;
-  }
   // border-bottom: 2px solid lightgray;
   // border-image-slice: 1;
   .unranked-map & {
@@ -17,8 +13,19 @@
   }
 }
 
+*:hover > .normal-value,
+*:not(:hover) > .hovered-value {
+  display: none;
+}
+
 .score-separater {
   margin: 0;
+  .lower & {
+    background: #f88 ;
+  }
+  .greater & {
+    background: #88f;
+  }
 }
 
 .scoreBottom {
@@ -26,6 +33,7 @@
   display: block;
   text-align: right;
   font-weight: normal;
+  font-size: .8rem;
   .ranked-map & {
     font-style: normal;
   }

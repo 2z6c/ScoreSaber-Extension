@@ -1,10 +1,19 @@
 import { messageAPI } from '../api/message';
+import { formatter } from '../util';
 
 function create(html) {
   const div = document.createElement('div');
   div.insertAdjacentHTML('afterbegin',html);
   return div.firstElementChild;
 }
+
+/**
+ * @typedef Score
+ * @property {number} pp
+ * @property {number} [accuracy]
+ * @property {number} [score]
+ * @property {number} leaderboardId
+ */
 
 class ScoreCellTop {
   #pp = 0;
@@ -13,7 +22,7 @@ class ScoreCellTop {
   set pp( pp ) {
     if ( isNaN(pp) ) return;
     this.#pp = parseFloat(pp);
-    this.value[0] = (Math.round(pp * 100) / 100).toFixed(2)+'pp';
+    this.value[0] = formatter.toFraction(pp)+'pp';
   }
   set sub(text) {
     this.value[1] = text;
@@ -25,9 +34,9 @@ class ScoreCellTop {
         leaderboardId,
         pp: targetPP,
       });
-      gain = Math.round( gain * 100 ) / 100;
+      // gain = Math.round( gain * 100 ) / 100;
     }
-    this.value[1] = `+${gain.toFixed(2)}pp`;
+    this.value[1] = `+${formatter.toFraction(gain)}pp`;
   }
   create() {
     return create(`
@@ -45,6 +54,7 @@ class ScoreCellSeparator {
   title = '';
   classes = ['score-separater'];
   style = '';
+  /** @param {number} v */
   guage( v ) {
     this.style = `background:linear-gradient(90deg,gold,gold ${v}%,gray ${v}%,gray);`;
   }
@@ -58,20 +68,76 @@ class ScoreCellSeparator {
 }
 
 class ScoreCellBottom {
-  accuracy;
+  /** @type {number} */
+  #accuracy;
+  /** @type {number} */
   #score;
+  #gap;
+  /** @type {'accuracy'|'score'} */
+  mode;
+  set accuracy(v) {
+    if ( isNaN(v) ) return;
+    if ( typeof v === 'number' ) this.#accuracy = v;
+    else if ( typeof v === 'string' ) this.#accuracy = parseFloat(v);
+    this.mode = 'accuracy';
+  }
+  get accuracy() { return this.#accuracy; }
   set score(v) {
-    this.#score = v.toLocaleString();
+    if ( isFinite(v) ) {
+      this.#score = v;
+      this.mode = 'score';
+    }
+  }
+  get score() { return this.#score; }
+  /**
+   * @param {Score} target
+   */
+  compare( target ) {
+    if ( isFinite(target.accuracy) ) {
+      this.#gap = formatter.toSignedPercent((this.#accuracy ?? 0) - target.accuracy);
+    } else {
+      this.#gap = formatter.toInteger((this.score ?? 0) - (target.score ?? 0));
+    }
+    return this.#gap > 0;
   }
   create() {
-    const element = create(`<span class="scoreBottom">N/A</span>`);
-    if ( this.accuracy ) {
-      element.textContent = this.accuracy.toFixed(2) + '%';
-      element.insertAdjacentElement( 'afterbegin', createAccuracyBadge(this.accuracy) );
-    } else if ( this.#score ) {
-      element.textContent = this.#score;
+    const fragment = /** @type {DocumentFragment} */ (ScoreCellBottom.$wrapper.content.cloneNode(true));
+    const span = fragment.querySelectorAll('span');
+    if ( this.mode === 'score' ) {
+      span[0].textContent = formatter.toInteger(this.score);
+    } else if ( this.mode === 'accuracy' ) {
+      span[0].textContent = formatter.toPercent(this.#accuracy);
+      if ( this.#accuracy ) span[0].insertAdjacentElement('afterbegin', this.createAccuracyBadge() );
     }
-    return element;
+    if ( this.#gap ) {
+      span[1].textContent = this.#gap;
+      fragment.firstElementChild.classList.add((this.#gap > 0) ? 'greater' : 'lower');
+    } else {
+      span[0].classList.remove('normal-value');
+      span[1].remove();
+    }
+    return fragment;
+  }
+  static $wrapper =  /** @type {HTMLTemplateElement} */ (create(`
+  <template>
+    <div class="scoreBottom">
+      <span class="normal-value">N/A</span>
+      <span class="hovered-value">N/A</span>
+    </div>
+  </template>`));
+  static $badge = /** @type {HTMLTemplateElement} */ (create(`
+  <template>
+    <i
+      class="accuracy-rank-badge"
+    ></i>  
+  </template>`));
+  createAccuracyBadge() {
+    const rating = getAccracyRank( this.#accuracy );
+    const tmp = /** @type {DocumentFragment} */ (ScoreCellBottom.$badge.content.cloneNode(true));
+    const i = tmp.querySelector('i');
+    i.classList.add(`rank-${rating}`);
+    i.textContent = rating;
+    return i;
   }
 }
 
@@ -87,15 +153,18 @@ export class ScoreCell {
     return div;
   }
   /**
-   * @param {import('../types/database').SongScore} base
-   * @param {number} targetPP
+   * @param {import('../types/database').SongScore} base Your score
+   * @param {Score} target Opponent's score
    */
-  static async compare( base, leaderboardId, targetPP ) {
+  static async compare( base, target ) {
     const mine = new ScoreCell();
     if ( base?.pp ) mine.top.pp = base.pp;
-    if ( targetPP ) await mine.top.predict( leaderboardId, targetPP );
     if ( base?.score ) mine.bottom.score = base.score;
     if ( base?.accuracy ) mine.bottom.accuracy = base.accuracy;
+    if ( target.pp ) {
+      await mine.top.predict( target.leaderboardId, target.pp );
+      mine.bottom.compare(target);
+    }
     return mine.create();
   }
   static mine( base ) {
@@ -107,11 +176,15 @@ export class ScoreCell {
     if ( base?.accuracy ) mine.bottom.accuracy = base.accuracy;
     return mine.create();
   }
+  /**
+   * @param {HTMLTableCellElement} td
+   */
   static from( td ) {
     const cell = new ScoreCell();
-    const regex = /[0-9.]+(?=pp)/gi;
-    const rawPP = parseFloat(regex.exec(td.textContent)[0]);
-    const weightedPP = parseFloat(regex.exec(td.textContent)[0]);
+    // const regex = /[0-9.]+(?=pp)/gi;
+    const tr = td.parentElement;
+    const rawPP = parseFloat(tr.dataset.pp);
+    const weightedPP = parseFloat(tr.dataset.wpp);
 
     cell.top.pp = rawPP;
     cell.top.sub = `${weightedPP}pp`;
@@ -119,12 +192,12 @@ export class ScoreCell {
 
     const w = weightedPP * 100 / rawPP;
     cell.hr.guage( w );
-    cell.hr.title = `Weighted ${w.toFixed(2)}%`;
+    cell.hr.title = `Weighted ${formatter.toPercent(w)}`;
 
-    const scoreBottom = td.querySelector('.scoreBottom');
-    const accuracy = parseFloat(scoreBottom.textContent.match(/\d+\.?\d*(?=%)/)?.[0]);
+    // const scoreBottom = td.querySelector('.scoreBottom');
+    const accuracy = parseFloat(tr.dataset.accuracy);
     cell.bottom.accuracy = accuracy;
-    cell.bottom.score = scoreBottom.textContent.replace(/\..*$/,'').replace(/^.*\s/,'');
+    cell.bottom.score = parseInt(tr.dataset.score);
 
     return cell.create();
   }
@@ -140,11 +213,3 @@ export function getAccracyRank( accuracy ) {
   else if ( accuracy >= 20.0 ) return 'D';
   return 'E';
 }
-
-export function createAccuracyBadge( accuracy ) {
-  const rating = getAccracyRank( accuracy );
-  return create(`<i
-    class="accuracy-rank-badge rank-${rating}"
-  >${rating}</i>`);
-}
-

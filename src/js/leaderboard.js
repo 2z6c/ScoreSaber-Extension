@@ -5,9 +5,9 @@ import {
   addAction,
   // createMyScore,
   extractHash,
-  makeDifficultyLabel,
   // postToBackground,
 } from './util';
+import { makeDifficultyLabel } from './renderer/difficultyLabel';
 
 async function modifyTable() {
   /** @type {NodeListOf<HTMLTableRowElement>} */

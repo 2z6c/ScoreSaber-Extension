@@ -123,18 +123,6 @@ async function oneClickInstall(e){
   // button.disabled = false;
 }
 
-/**
- *
- * @param {string} timestamp
- * @returns {string}
- */
-export function shortenTimestamp(timestamp){
-  let [v,u] = timestamp.trim().split(' ');
-  if ( u.startsWith('min') ) u = 'min';
-  else u = u[0];
-  return `${v}${u}`;
-}
-
 export function extractHash(text) {
   return text.match(/[0-9a-fA-F]{40}/)?.[0];
 }
@@ -153,8 +141,6 @@ export async function waitElement(selector,parent=document) {
   }
   return el;
 }
-
-
 
 export function connectToBackground(name, query) {
   const port = chrome.runtime.connect({name});
@@ -177,14 +163,45 @@ function safeName(s,...a) {
   return a.reduce((o,t,i)=>o+t+s[i+1],s[0]).replace(/[/\\:*?<>|]/g,'_');
 }
 
-/**
- * @param {string} text Difficulty label
- * @param {string} color Color code of label (refer to original label)
- * @param {number} [star] Star Rank
- * @returns {string} HTML string
- */
-export const makeDifficultyLabel = (text,color,star) => `
-<div class="difficulty-label" style="background:${color}">
-  <div>${text}</div>
-  <div ${star?'':'hidden'}><i class="fas fa-star"></i>${star?.toFixed(2)}</div>
-</div>`;
+export const formatter = {
+  integer: new Intl.NumberFormat('en',{
+    minimumFractionDigits: 0,
+  }),
+  fraction: new Intl.NumberFormat('en', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }),
+  percent: new Intl.NumberFormat('en', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'percent',
+  }),
+  signedFraction: new Intl.NumberFormat('en', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    signDisplay: 'exceptZero',
+  }),
+  signedPercent: new Intl.NumberFormat('en', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'percent',
+    signDisplay: 'exceptZero',
+  }),
+  toInteger(v) {
+    return formatter.integer.format(v);
+  },
+  toFraction(v) {
+    v = Math.round( v * 100 ) / 100;
+    return formatter.fraction.format(v);
+  },
+  toPercent(v) {
+    return formatter.percent.format( Math.round(v*100) / 1e4 );
+  },
+  toSignedFraction(v) {
+    v = Math.round( v * 100 ) / 100;
+    return formatter.signedFraction.format(v);
+  },
+  toSignedPercent(v) {
+    return formatter.signedPercent.format( Math.round(v*100) / 1e4 );
+  }
+};
