@@ -99,7 +99,7 @@ export async function arrangeScoreTable() {
   tr[0].insertAdjacentHTML('beforeend', '<th>Action</th>');
   for (let i = 1; i < tr.length; i++) {
     extractRowData(tr[i]);
-    const hash = tr[i].querySelector('img').src.match(/[0-9a-fA-F]{40}/)[0];
+    const hash = tr[i].dataset.hash;
 
     addStars(tr[i], hash);
     moveMapper(tr[i]);

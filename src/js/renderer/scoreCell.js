@@ -31,7 +31,7 @@ class ScoreCellTop {
     let gain = 0;
     if ( this.#pp < targetPP ) {
       gain = await messageAPI.predictScore({
-        leaderboardId,
+        leaderboardId: parseInt(leaderboardId),
         pp: targetPP,
       });
       // gain = Math.round( gain * 100 ) / 100;
@@ -53,10 +53,25 @@ class ScoreCellTop {
 class ScoreCellSeparator {
   title = '';
   classes = ['score-separater'];
+  color = ['gold','gray'];
   style = '';
+  invert = false;
+  compare( base, target ) {
+    if ( !base ) base = 100;
+    const v = ( target - base ) * 100 / base;
+    console.log( base, target, v );
+    if ( v < 0 ) {
+      this.color[0] = 'lightgreen';
+      this.guage( -v );
+    } else if ( v > 0 ) {
+      this.color[0] = 'pink';
+      this.invert = true;
+      this.guage( v );
+    }
+  }
   /** @param {number} v */
   guage( v ) {
-    this.style = `background:linear-gradient(90deg,gold,gold ${v}%,gray ${v}%,gray);`;
+    this.style = `background:linear-gradient(${this.invert?'270deg':'90deg'},${this.color[0]} ${v}%, ${this.color[1]} ${v}%);`;
   }
   create() {
     return create(`<hr
@@ -163,6 +178,7 @@ export class ScoreCell {
     if ( base?.accuracy ) mine.bottom.accuracy = base.accuracy;
     if ( target.pp ) {
       await mine.top.predict( target.leaderboardId, target.pp );
+      mine.hr.compare( base?.pp, target.pp );
       mine.bottom.compare(target);
     }
     return mine.create();
