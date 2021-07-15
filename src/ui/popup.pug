@@ -25,6 +25,8 @@ html(lang="en")
           i.far.fa-heart
         .tab(title="Bookmark")
           i.far.fa-bookmark
+        .tab(title="Rank")
+          i.far.fa-star
         .tab(title="About")
           i.fas.fa-info
         .tab.active(title="Settings")
@@ -32,6 +34,7 @@ html(lang="en")
     main
       include popup/favorite.pug
       include popup/bookmark.pug
+      include popup/ranked.pug
       article#About
         h2 About
         section 

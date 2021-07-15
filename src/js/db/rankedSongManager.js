@@ -1,11 +1,15 @@
 import { promisify } from './db';
 
-const VERSION = 1;
+/**
+ * @typedef {import('../types/database').Level} Level
+ */
+
+const VERSION = 3;
 const KEY = 'ranked-maps';
 
 const extructDifficulty = _diff_type => _diff_type.split('_')[1].replace('Plus','+');
 
-export class RankedSongManageer {
+export class RankedSongManager {
   /** @type {IDBDatabase} */
   #db;
   async #open() {
@@ -20,12 +24,18 @@ export class RankedSongManageer {
   #close() {
     this.#db.close();
   }
-  #createObjectStore(e) {
+  async #createObjectStore(e) {
     this.#db = e.target.result;
-    if ( this.#db.version < VERSION ) this.#db.deleteObjectStore(KEY);
+    const request = e.currentTarget.transaction.objectStore(KEY).getAll();
+    const data = await promisify(request);
+    this.#db.deleteObjectStore(KEY);
     const store = this.#db.createObjectStore(KEY,{keyPath: ['hash','diff']});
     store.createIndex('hash','hash', {unique:false});
     store.createIndex('leaderboardId','leaderboardId', {unique:true});
+    store.createIndex('star','stars',{unique: false});
+    for ( const item of data ) {
+      store.add(item);
+    }
   }
   destruct() {
     const request = indexedDB.deleteDatabase('rankedSongs');
@@ -36,6 +46,7 @@ export class RankedSongManageer {
    */
   async add( raw ) {
     await this.#open();
+    /** @type {Level} */
     const song = {
       hash: raw.id,
       diff: extructDifficulty(raw.diff),
@@ -59,4 +70,36 @@ export class RankedSongManageer {
     this.#close();
     return song;
   }
+  /**
+   * @param {number} min minimum star rank
+   * @param {number} max maximum star rank
+   * @returns {Promise<Level[]>}
+   */
+  async getRange( min, max ) {
+    await this.#open();
+    const range = IDBKeyRange.bound( min, max );
+    const request = this.#db.transaction(KEY,'readonly')
+      .objectStore(KEY)
+      .index('star')
+      .getAll(range);
+    const list = await promisify(request);
+    this.#close();
+    return list;
+  }
+    /**
+   * @param {number} min minimum star rank
+   * @param {number} max maximum star rank
+   * @returns {Promise<number>}
+   */
+     async countRange( min, max ) {
+      await this.#open();
+      const range = IDBKeyRange.bound( min, max );
+      const request = this.#db.transaction(KEY,'readonly')
+        .objectStore(KEY)
+        .index('star')
+        .count(range);
+      const n = await promisify(request);
+      this.#close();
+      return n;
+    }
 }

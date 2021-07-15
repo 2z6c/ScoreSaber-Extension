@@ -104,6 +104,7 @@ article {
   width: 32px;
 }
 
+section > label,
 .form-row {
   display: flex;
   flex-flow: row nowrap;
@@ -112,6 +113,10 @@ article {
   > :not(:last-child) {
     margin-right: 4px;
   }
+}
+
+input[type=range] {
+  flex: 1 0 auto;
 }
 
 #profile {
@@ -157,6 +162,9 @@ article {
 
 .error {
   color: red;
+}
+input:invalid {
+  background: rgba(255 0 0 / 15%);
 }
 
 #bookmark-song-list,

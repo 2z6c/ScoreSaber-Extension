@@ -163,6 +163,21 @@ function safeName(s,...a) {
   return a.reduce((o,t,i)=>o+t+s[i+1],s[0]).replace(/[/\\:*?<>|]/g,'_');
 }
 
+export async function getExtensionImage() {
+  const IMG_SIZE = 48;
+  const img = new Image(IMG_SIZE,IMG_SIZE);
+  await new Promise( resolve => {
+    img.src = `/icons/${IMG_SIZE}x${IMG_SIZE}.png`;
+    img.addEventListener('load',resolve);
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = IMG_SIZE;
+  canvas.height = IMG_SIZE;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 export const formatter = {
   integer: new Intl.NumberFormat('en',{
     minimumFractionDigits: 0,

@@ -11,3 +11,10 @@ export type UserScore = {
   lastUpdated: number;
   accumlatedScores: number[];
 }
+
+export type Level = {
+  hash: string;
+  diff: string;
+  stars: number;
+  leaderboardId: number;
+}

@@ -51,7 +51,7 @@ export const profileManager = {
     /** @type {UserProfile} */
     const user = await readStorage(KEY_USER);
     const score = await messageAPI.getUser( user.id );
-    return Object.assign({}, user, score);
+    return {...user, ...score};
   },
   async getUser( userId ) {
     return await messageAPI.getUser( userId );

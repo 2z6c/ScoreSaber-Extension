@@ -9,8 +9,8 @@ import { predictScoreGain, sortPPAsc } from './js/scoreComparator';
 import { scoreManager } from './js/db/scoreManager';
 import { snipe } from './js/snipe';
 import { KEY_BOOKMARK, KEY_FAVORITE, readStorage, writeStorage } from './js/api/storage';
-import { RankedSongManageer } from './js/db/rankedSongManager';
-const rankedSongManager = new RankedSongManageer();
+import { RankedSongManager } from './js/db/rankedSongManager';
+const rankedSongManager = new RankedSongManager();
 
 chrome.runtime.onInstalled.addListener(async ()=>{
   console.log('installed');

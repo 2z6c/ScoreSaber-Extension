@@ -4,7 +4,7 @@ import {
   KEY_BOOKMARK
 } from '../api/storage';
 import { BASE_URL } from '../integration/scoresaber';
-import { downloadJson } from '../util';
+import { downloadJson, getExtensionImage } from '../util';
 import { profileManager } from '../profileManager';
 /**
  * @typedef {import('../api/storage').Bookmark} Bookmark
@@ -91,17 +91,3 @@ function makeSongItem(song) {
   return item;
 }
 
-async function getExtensionImage() {
-  const IMG_SIZE = 48;
-  const img = new Image(IMG_SIZE,IMG_SIZE);
-  await new Promise( resolve => {
-    img.src = `/icons/${IMG_SIZE}x${IMG_SIZE}.png`;
-    img.addEventListener('load',resolve);
-  });
-  const canvas = document.createElement('canvas');
-  canvas.width = IMG_SIZE;
-  canvas.height = IMG_SIZE;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0);
-  return canvas.toDataURL('image/png');
-}

@@ -4,9 +4,9 @@
  */
 import { scoreManager } from '../db/scoreManager';
 import { readStorage, writeStorage } from '../api/storage';
-import { RankedSongManageer } from '../db/rankedSongManager';
+import { RankedSongManager } from '../db/rankedSongManager';
 import { profileManager } from '../profileManager';
-const rankedSongManager = new RankedSongManageer();
+const rankedSongManager = new RankedSongManager();
 
 export const BASE_URL = 'https://scoresaber.com';
 const NEW_API = 'https://new.scoresaber.com/api';
@@ -147,6 +147,7 @@ export class SSUserScoreRequest extends ScoreSaberRequest {
 
 export class SSRankedSongsRequest extends ScoreSaberRequest {
   #limit = 50;
+  #incremental = true;
   /**
    * @param {boolean} [incremental]
    */
@@ -155,6 +156,7 @@ export class SSRankedSongsRequest extends ScoreSaberRequest {
     const url = `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=`;
     super(url);
     this.#limit = limit;
+    this.#incremental = incremental;
   }
   async *eachSong() {
     for await ( const {songs} of await this.each() ) {
@@ -167,7 +169,7 @@ export class SSRankedSongsRequest extends ScoreSaberRequest {
     for await ( const song of this.eachSong() ) {
       console.log(song);
       const finished = await rankedSongManager.add( song );
-      if ( finished ) break;
+      if ( finished && this.#incremental ) break;
     }
     this.stop();
     console.log('Ranked Songs are Updated.');
