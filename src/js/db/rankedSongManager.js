@@ -41,6 +41,12 @@ export class RankedSongManager {
     const request = indexedDB.deleteDatabase('rankedSongs');
     return promisify(request);
   }
+  async clear() {
+    await this.#open();
+    const request = this.#db.transaction(KEY).objectStore(KEY).clear();
+    await promisify(request);
+    this.#close();
+  }
   /**
    * @param {import('../types/scoresaber').ScoreSaber.Song} raw
    */
