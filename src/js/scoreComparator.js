@@ -46,8 +46,8 @@ export async function predictScoreGain( user, newScore ) {
   const newRank = user.score.findIndex(v=>v.pp < newScore.pp );
   const newPP = newScore.pp * PP_DECAY ** newRank;
   const oldPP = user.score[oldRank].pp * PP_DECAY ** oldRank;
-  console.log( `song[${newScore.leaderboardId}] from rank[${oldRank}] to rank[${newRank}] will adds ${newPP-oldPP}pp`);
   let gain = newPP - oldPP;
+  console.log( `song[${newScore.leaderboardId}] from rank[${oldRank}](${oldPP}pp) to rank[${newRank}](${newPP}pp) will adds ${gain}pp`);
   return gain - (user.accumlatedScores[oldRank] - user.accumlatedScores[newRank]) * (1 - PP_DECAY);
 }
 

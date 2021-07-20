@@ -17,7 +17,8 @@ export async function initBookmark() {
   const ul = document.getElementById('bookmark-song-list');
   const tmp = /** @type {HTMLTemplateElement} */ (document.getElementById('bookmark-item-template'));
   for ( const bookmark of bookmarks ) {
-    const li = /** @type {HTMLElement} */ (tmp.content.cloneNode(true).firstChild);
+    const fragment = /** @type {DocumentFragment} */ (tmp.content.cloneNode(true));
+    const li = /** @type {HTMLLIElement} */ (fragment.firstElementChild);
     li.querySelector('.song-cover').setAttribute('src', `${BASE_URL}/imports/images/songs/${bookmark.hash}.png`);
     li.dataset.link = bookmark.link;
     li.addEventListener('click',openSongPage);
