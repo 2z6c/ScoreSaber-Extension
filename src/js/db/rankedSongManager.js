@@ -92,20 +92,20 @@ export class RankedSongManager {
     this.#close();
     return list;
   }
-    /**
+  /**
    * @param {number} min minimum star rank
    * @param {number} max maximum star rank
    * @returns {Promise<number>}
    */
-     async countRange( min, max ) {
-      await this.#open();
-      const range = IDBKeyRange.bound( min, max );
-      const request = this.#db.transaction(KEY,'readonly')
-        .objectStore(KEY)
-        .index('star')
-        .count(range);
-      const n = await promisify(request);
-      this.#close();
-      return n;
-    }
+  async countRange( min, max ) {
+    await this.#open();
+    const range = IDBKeyRange.bound( min, max );
+    const request = this.#db.transaction(KEY,'readonly')
+      .objectStore(KEY)
+      .index('star')
+      .count(range);
+    const n = await promisify(request);
+    this.#close();
+    return n;
+  }
 }

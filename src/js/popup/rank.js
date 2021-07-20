@@ -16,7 +16,6 @@ const number = [
   /** @type {HTMLInputElement} */
   (document.getElementById('max-star-number')),
 ];
-const button = /** @type {HTMLButtonElement} */ (document.getElementById('download-starred-playlist'));
 
 range[0].addEventListener('change',e => {
   number[0].value = range[0].value;
@@ -55,6 +54,7 @@ function changeMax( max ) {
 
 const counter = document.getElementById('count-maps');
 const rankedSongManager = new RankedSongManager();
+const button = /** @type {HTMLButtonElement} */ (document.getElementById('download-starred-playlist'));
 
 async function countLevels() {
   const star = [
@@ -63,6 +63,7 @@ async function countLevels() {
   ];
   const count = await rankedSongManager.countRange( star[0], star[1] );
   counter.textContent = `${count}`;
+  button.disabled = count === 0;
 }
 countLevels();
 
@@ -123,10 +124,11 @@ function showHint( id, msg, type='' ) {
   el.className = `hint ${type}`;
 }
 
+const $lastUpdate = document.getElementById('last-update-date');
 async function setLastUpdate() {
-  const b = document.getElementById('last-update-date');
   const text = await getLastUpdate();
-  b.textContent = text ? new Date(text).toLocaleString() : 'Now Loading...';
+  $lastUpdate.textContent = text ? new Date(text).toLocaleString() : 'Now Loading...';
 }
+setLastUpdate();
 
 document.getElementById('update-ranked-songs').addEventListener('click', updateRankList);
