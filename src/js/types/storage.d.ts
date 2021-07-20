@@ -8,4 +8,19 @@ export interface Favorite {
 export interface Bookmark {
   hash: string;
   title: string;
+  link: string;
+  characteristic?: string;
+  difficultyName?: DifficultyName;
+}
+
+export type DifficultyName = 'Easy'
+  | 'Normal'
+  | 'Hard'
+  | 'Expert'
+  | 'ExpertPlus';
+
+export interface User extends Favorite {
+  locked: boolean;
+  globalRank: number;
+  countryRank: number;
 }

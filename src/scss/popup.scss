@@ -80,6 +80,7 @@ article {
   }
 }
 
+#update-user-score:disabled i,
 #update-ranked-songs:disabled i {
   animation: Loading 5s linear infinite;
   transform-origin: center center;
@@ -95,10 +96,15 @@ article {
   border-radius: 50%;
 }
 
+#user-id {
+  flex: 1 0 auto;
+}
+
 #lock-user-id {
   width: 32px;
 }
 
+section > label,
 .form-row {
   display: flex;
   flex-flow: row nowrap;
@@ -107,6 +113,36 @@ article {
   > :not(:last-child) {
     margin-right: 4px;
   }
+}
+
+input[type=range] {
+  flex: 1 0 auto;
+}
+
+#profile {
+  display: flex;
+  flex-flow: column nowrap;
+  margin-left: 4px;
+  margin-bottom: 8px;
+  flex: 1 0 auto;
+}
+
+#last-update-user {
+  text-align: right;
+  font-size: .9rem;
+  color: gray;
+}
+
+#profile-update-row {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#update-user-score {
+  font-size: .8rem;
+  margin-left: 4px;
 }
 
 #user-name {
@@ -126,6 +162,9 @@ article {
 
 .error {
   color: red;
+}
+input:invalid {
+  background: rgba(255 0 0 / 15%);
 }
 
 #bookmark-song-list,

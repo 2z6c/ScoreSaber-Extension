@@ -1,10 +1,11 @@
 const STORAGE = chrome.storage.local;
 export const KEY_FAVORITE = 'favorite';
 export const KEY_BOOKMARK = 'bookmark';
+export const KEY_USER_ID = 'userId';
 
 /**
- * @param {string} key 
- * @returns {Promise<unknown>}
+ * @param {string} key
+ * @returns {Promise<*>}
  */
 export function readStorage(key) {
   return new Promise( resolve => {
@@ -14,10 +15,18 @@ export function readStorage(key) {
   });
 }
 
+export function clearStorage(key) {
+  return new Promise( resolve => {
+    STORAGE.remove(key, () => {
+      resolve();
+    });
+  });
+}
+
 /**
- * 
- * @param {string} key 
- * @param {*} value 
+ *
+ * @param {string} key
+ * @param {*} value
  * @returns {Promise<void>}
  */
 export async function writeStorage( key, value ) {
@@ -33,12 +42,12 @@ export async function writeStorage( key, value ) {
 }
 
 /**
- * @typedef {import("./types/storage").Favorite} Favorite
- * @typedef {import("./types/storage").Bookmark} Bookmark
- * 
- * @param {'favorite'|'bookmark'} key 
- * @param {Favorite|Bookmark} value 
- * @returns 
+ * @typedef {import("../types/storage").Favorite} Favorite
+ * @typedef {import("../types/storage").Bookmark} Bookmark
+ *
+ * @param {'favorite'|'bookmark'} key
+ * @param {Favorite|Bookmark} value
+ * @returns
  */
 export async function pushStorage( key, value ) {
   let list = await readStorage( key );
@@ -51,7 +60,7 @@ export async function pushStorage( key, value ) {
 }
 
 /**
- * 
+ *
  * @param {string|number} id player id
  * @returns {Promise<void>}
  */
@@ -65,8 +74,8 @@ export async function removeFavorite( id ) {
 }
 
 /**
- * 
- * @param {string|number} id player id
+ *
+ * @param {string|number} hash
  * @returns {Promise<boolean>}
  */
  export async function removeBookmark( hash ) {

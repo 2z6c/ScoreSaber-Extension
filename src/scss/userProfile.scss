@@ -1,4 +1,6 @@
 @import './common.scss';
+@import './scoreCell';
+@import './toast';
 
 .button-chart-expand {
   position: absolute;
@@ -53,69 +55,7 @@ th.song > div {
   margin: 4px;
 }
 
-.difficulty-label {
-  text-align: center;
-  color: #fff;
-  border-radius: 4px;
-  width: 68px;
-  margin-right: 8px;
-  font-weight: normal;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: center;
-}
-
 .mapper-icon {
   font-size: .9rem;
   margin-right: 4px;
-}
-
-.scoreTop {
-  width: 80px;
-  > span {
-    display: block;
-    text-align: right;
-  }
-  &:hover > .raw-pp,
-  &:not(:hover) > .weighted-pp {
-    display: none;
-  }
-  border-bottom: 2px solid lightgray;
-  border-image-slice: 1;
-}
-
-.accuracy-rank-badge {
-  font-size: .8rem;
-  font-weight: 600;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 4px;
-  box-sizing: border-box;
-  border: 1px solid #222;
-  width: 28px;
-  height: 16px;
-  font-style: normal;
-  color: #000;
-  margin-right: 4px;
-}
-
-.rank-SSS{
-  background: purple;
-  color: #fff;
-}
-.rank-SS{ background: gold; }
-.rank-S { background: silver; }
-.rank-A { background: cyan; }
-.rank-B { background: lime; }
-.rank-C { background: yellow; }
-.rank-D { background: pink; }
-.rank-E {
-  background: #222;
-  color: #fff;
-}
-
-tbody tr:hover {
-  background:rgba(255 255 0 / 10%);
-  transition: background .5s;
 }

@@ -13,6 +13,7 @@
   "author": "nizhack",
   "license": "MIT",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.14.7",
     "esbuild": "^0.12.8",
     "esbuild-sass-plugin": "^1.4.6",
     "eslint": "^7.28.0",

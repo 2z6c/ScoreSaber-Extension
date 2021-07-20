@@ -1,0 +1,81 @@
+.scoreTop {
+  width: 80px;
+  > span {
+    display: block;
+    text-align: right;
+  }
+  // border-bottom: 2px solid lightgray;
+  // border-image-slice: 1;
+  .unranked-map & {
+    text-decoration: line-through;
+    font-weight: normal;
+    color: lightgray;
+  }
+}
+
+*:hover > .normal-value,
+*:not(:hover) > .hovered-value {
+  display: none;
+}
+
+.score-separater {
+  margin: 0;
+  .lower & {
+    background: #f88 ;
+  }
+  .greater & {
+    background: #88f;
+  }
+}
+
+.scoreBottom {
+  width: 80px;
+  display: block;
+  text-align: right;
+  font-weight: normal;
+  font-size: .8rem;
+  .ranked-map & {
+    font-style: normal;
+  }
+  padding: 4px 0;
+}
+
+.accuracy-rank-badge {
+  font-size: .8rem;
+  font-weight: 600;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid #222;
+  width: 28px;
+  height: 16px;
+  font-style: normal;
+  color: #000;
+  margin-right: 4px;
+}
+
+.rank-SSS{
+  background: purple;
+  color: #fff;
+}
+.rank-SS{ background: gold; }
+.rank-S { background: silver; }
+.rank-A { background: cyan; }
+.rank-B { background: lime; }
+.rank-C { background: yellow; }
+.rank-D { background: pink; }
+.rank-E {
+  background: #222;
+  color: #fff;
+}
+
+table.ranking.songs {
+  border-collapse: separate;
+}
+
+tbody tr:hover {
+  background:rgba(255 255 0 / 10%);
+  transition: background .5s;
+}

@@ -11,5 +11,14 @@
   "extends": [
     "eslint:recommended"
   ],
-  "ignorePatterns": ["build.js","watch.js"]
+  "parser": "@babel/eslint-parser",
+  "ignorePatterns": ["build.js","watch.js"],
+  "rules": {
+    "semi": "error",
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^[_e]$"}],
+    "no-trailing-spaces": "error",
+    "quotes": ["error", "single", {"allowTemplateLiterals": true}],
+    "no-extra-semi": "error",
+    "no-cond-assign": "warn"
+  }
 }

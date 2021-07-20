@@ -1,123 +1,181 @@
 /**
  * @typedef {import('../types/scoresaber').ScoreSaber.Schema} Schema
+ * @typedef {import('../types/scoresaber').ScoreSaber.Player} Player
  */
-import {readStorage, writeStorage} from '../storage';
+import { scoreManager } from '../db/scoreManager';
+import { readStorage, writeStorage } from '../api/storage';
+import { RankedSongManager } from '../db/rankedSongManager';
+import { profileManager } from '../profileManager';
+const rankedSongManager = new RankedSongManager();
 
 export const BASE_URL = 'https://scoresaber.com';
 const NEW_API = 'https://new.scoresaber.com/api';
-
-const RANK_URL = (limit,page) => `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=${page}`
-let rank = {};
-let _loading = false;
-export function isBusy() {
-  return _loading;
-}
-
-export async function fetchPlayer( id ) {
-  const res = await fetch(`${NEW_API}/player/${id}/full`);
-  if ( !res.ok ) return;
-  return res.json();
-}
-
-export async function fetchRankedSongs({difference=false}={}) {
-  _loading = true;
-  if ( Object.keys(rank).length === 0 ) difference = false;
-  const limit = difference ? 50 : 1000;
-  let s = 0, d = 0;
-  if ( !difference ) {
-    console.log('fetch all maps.');
-    rank = {};
-  }
-  REQUEST: for ( let i = 1;; i++ ) {
-    console.log('fetch scoresaber ranked data. page ',i);
-    try {
-      const res = await fetch(RANK_URL(limit,i));
-      /** @type {Schema} */
-      const data = await res.json();
-      if ( data.songs.length === 0 ) break;
-      for ( const {id,diff,stars} of data.songs ) {
-        if ( !rank[id] ) {
-          rank[id] = {};
-          s++;
-        }
-        const diffKey = extructDifficulty(diff);
-        if ( rank[id][diffKey] ) break REQUEST;
-        rank[id][diffKey] = stars;
-        d++;
-      }
-      await new Promise(r=>setTimeout(r, 3000));
-    } catch(e) {
-      console.error(e);
-      break;
-    }
-  }
-  console.log(`${s.toLocaleString()} maps (${d.toLocaleString()} difficulties) are updated.`);
-  chrome.storage.local.set({
-    rank,
-    lastUpdate: Date.now(),
-  });
-  _loading = false;
-}
 
 export function getLastUpdate() {
   return readStorage('lastUpdate');
 }
 
-export async function loadRankedSongs() {
-  const _rank = await readStorage('rank');
-  if ( _rank ) rank = _rank;
-  return rank;
-}
-
-const extructDifficulty = _diff_type => _diff_type.split('_')[1].replace('Plus','+');
-
-export function getSongStars( hash, diff ) {
-  return rank[hash]?.[diff];
-}
-
 /**
- * 
- * @param {number} id Player ID
- * @param {'top'|'recent'} order 
+ * @param {number} ms
+ * @returns {Promise<void>}
  */
-export async function* fetchPlayerScore( id, order='recent' ) {
-  _loading = true;
-  for ( let page = 1;; page++ ) {
-    console.log('fetch user scores from scoresaber. page ',page);
-    try {
-      const res = await fetch(`${NEW_API}/player/${id}/scores/${order}/${page}`);
-      if ( !res.ok ) throw new Error('unreachable to scoresaber.com.');
-      /** @type {import('../types/scoresaber').ScoreSaber.SchemaScores} */
-      const data = await res.json();
-      if ( !data || !data.scores ) break;
-      for ( const score of data.scores ) {
-        yield score;
+const delay = async (ms=300) => new Promise(r=>setTimeout(r,ms));
+
+export class ScoreSaberIntegration {
+  /**
+   * @param {string} id
+   * @param {'top'|'recent'} order
+   * @param {boolean} [force]
+   */
+  async updatePlayerScore(id,order,force) {
+    const url = `${NEW_API}/player/${id}/scores/${order}/`;
+    const request = new ScoreSaberRequest(url);
+    const lastUpdated = new Date((await profileManager.get())?.lastUpdated);
+    for await ( const {scores} of await request.each() ) {
+      if ( !scores ) break;
+      request.max += scores.length;
+      for ( const score of scores ) {
+        if ( new Date(score.timeSet) < lastUpdated ) break;
+        await scoreManager.addScore( id, score );
+        request.current++;
       }
-      if ( data.scores.length < 8 ) break;
-      await new Promise(r=>setTimeout(r, 300));
+      if ( !force && scores.length < 8 ) break;
+    }
+    request.stop();
+  }
+  /**
+   * @param {string} id
+   * @returns {Promise<Player>}
+   */
+  static async getUser(id) {
+    const url = `${NEW_API}/player/${id}/full`;
+    const request = new ScoreSaberRequest(url);
+    return request.send();
+  }
+}
+
+export class ScoreSaberRequest {
+  #stop = false;
+  #promise;
+  constructor(url) {
+    this.url = url;
+    this.max = 1;
+    this.current = 0;
+  }
+  get progress() {
+    return this.current / this.max;
+  }
+  async #send() {
+    console.log('fetch ', this.url);
+    const res = await fetch(this.url);
+    if ( !res.ok ) throw new Error(`unreachable to ${this.url}`);
+    const data = await res.json();
+    await delay();
+    return data;
+  }
+  async send() {
+    return queue = queue.then(_=>{
+      return this.#promise = this.#send();
+    });
+  }
+  async *#each() {
+    try {
+      for ( let page = 1;; page++ ) {
+        if ( this.#stop ) break;
+        const url = this.url + page;
+        console.log('fetch ', url);
+        const res = await fetch(url);
+        if ( !res.ok ) break;
+        const data = await res.json();
+        if ( data ) yield data;
+        else break;
+        await delay(300);
+      }
     } catch(e) {
       console.error(e);
-      break;
     }
   }
-  _loading = false;
+  /**
+   * @returns {Promise<AsyncGenerator>}
+   */
+  async each() {
+    return queue = queue.then(_=>{
+      return this.#promise = this.#each();
+    });
+  }
+  stop() {
+    this.#stop = true;
+    this.#promise.return();
+  }
+  // static queue = Promise.resolve();
+}
+/** @type {Promise<*>} */
+let queue = Promise.resolve();
+
+export class SSUserScoreRequest extends ScoreSaberRequest {
+  force = false;
+  lastUpdated = new Date(0);
+  /**
+   * @param {string} id
+   */
+  constructor(id,order='recent'){
+    super(`${NEW_API}/player/${id}/scores/${order}/`);
+    this.userId = id;
+    this.order = order;
+    scoreManager.getUser(id).then( user => {
+      if ( !user ) return;
+      this.lastUpdated = new Date(user.lastUpdated);
+    });
+  }
+  async *eachScore() {
+    for await ( const {scores} of await super.each() ) {
+      if ( !scores ) break;
+      yield* scores;
+      if ( !this.force && scores.length < 8 ) break;
+    }
+    this.stop();
+  }
+  async send() {
+    for await ( const score of this.eachScore() ) {
+      if ( new Date(score.timeSet) < this.lastUpdated ) break;
+      await scoreManager.addScore( this.userId, score );
+    }
+    await scoreManager.updateUser( this.userId );
+    console.log(`user scores have been updated.`);
+  }
 }
 
-const TEMP_RECORD = {scores:{},lastUpdated:0};
-
-export async function updateUserScores( uid ) {
-  const record = (await readStorage('scores'));
-  const {scores,lastUpdated} = record?.[uid] ?? TEMP_RECORD;
-  for await ( const score of fetchPlayerScore(uid) ) {
-    if ( new Date(score.timeSet) < lastUpdated ) break;
-    scores[score.leaderboardId] = {
-      score: score.score,
-      pp: score.pp,
-    };
+export class SSRankedSongsRequest extends ScoreSaberRequest {
+  #limit = 50;
+  #hard = false;
+  /**
+   * @param {boolean} [incremental]
+   */
+  constructor(incremental) {
+    const limit = incremental ? 50 : 1000;
+    const url = `${BASE_URL}/api.php?function=get-leaderboards&cat=1&limit=${limit}&ranked=1&page=`;
+    super(url);
+    this.#limit = limit;
+    this.#hard = !incremental;
   }
-  await writeStorage(`scores.${uid}`, {
-    scores,
-    lastUpdated: Date.now(),
-  });
-  console.log(`user scores have been updated.`);
+  async *eachSong() {
+    for await ( const {songs} of await this.each() ) {
+      yield* songs;
+      if (songs.length < this.#limit) break;
+    }
+    this.stop();
+  }
+  async send() {
+    if ( this.#hard ) {
+      await rankedSongManager.clear();
+    }
+    for await ( const song of this.eachSong() ) {
+      console.log(song);
+      const finished = await rankedSongManager.add( song );
+      if ( finished && !this.#hard ) break;
+    }
+    this.stop();
+    console.log('Ranked Songs are Updated.');
+    await writeStorage('lastUpdate', Date.now());
+  }
 }
