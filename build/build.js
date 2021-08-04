@@ -26,6 +26,7 @@ esbuild.build({
   },
   minify: process.argv[2] === 'production',
   sourcemap: process.argv[2] === 'development',
+  tsconfig: 'jsconfig.json',
   watch,
 }).catch(()=>process.exit(1));
 
@@ -62,5 +63,11 @@ esbuild.build({
   watch,
 }).catch(()=>process.exit(1));
 
+// Watch manifest.json
 import {promises as fs} from 'fs';
-fs.copyFile('src/manifest.json','dist/manifest.json');
+const manifestPath = 'src/manifest.json';
+if ( watch ) {
+  for await ( const e of fs.watch(manifestPath) ) {
+    await fs.copyFile(manifestPath,'dist/manifest.json');
+  }
+} else fs.copyFile(manifestPath,'dist/manifest.json');
