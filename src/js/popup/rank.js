@@ -52,7 +52,8 @@ function changeMax( max ) {
   }
 }
 
-const counter = document.getElementById('count-maps');
+const countMaps = document.getElementById('count-maps');
+const countDiffs = document.getElementById('count-difficulties');
 const rankedSongManager = new RankedSongManager();
 const button = /** @type {HTMLButtonElement} */ (document.getElementById('download-starred-playlist'));
 
@@ -61,9 +62,10 @@ async function countLevels() {
     parseFloat(number[0].value),
     parseFloat(number[1].value)
   ];
-  const count = await rankedSongManager.countRange( star[0], star[1] );
-  counter.textContent = `${count}`;
-  button.disabled = count === 0;
+  const [diffs,songs] = await rankedSongManager.countRange( star[0], star[1] );
+  countDiffs.textContent = `${diffs}`;
+  countMaps.textContent = `${songs}`;
+  button.disabled = diffs === 0;
 }
 countLevels();
 
@@ -79,7 +81,7 @@ button.addEventListener('click',async e => {
     playlistTitle: `ScoreSaber Ranked Pool ★${star[0].toFixed(1)} - ${star[1].toFixed(1)}`,
     playlistAuthor: (await profileManager.get())?.name || 'ScoreSaber-Extension',
     image: await getExtensionImage(),
-    songs: list.map( makeSongItem ),
+    songs: makeSongItems( list ),
   }, `ranked pool ${star[0].toFixed(1)} - ${star[1].toFixed(1)}`);
   button.disabled = false;
 });
@@ -88,7 +90,7 @@ button.addEventListener('click',async e => {
  * @param {import('../types/database').Level} level
  * @returns {import('../types/beatsaber').BeatSaber.PlaylistSong }
  */
- function makeSongItem(level) {
+function makeSongItem(level) {
   return {
     hash: level.hash,
     difficulties: [{
@@ -96,6 +98,22 @@ button.addEventListener('click',async e => {
       characteristic: 'Standard',
     }]
   };
+}
+/**
+ * make song list for playlist.json that removes duplicate
+ * @param {import('../types/database').Level[]} levels
+ * @returns {import('../types/beatsaber').BeatSaber.PlaylistSong[] }
+ */
+function makeSongItems( levels ) {
+  const items = new Map();
+  for ( const {hash,diff} of levels ) {
+    const item = items.get(hash) ?? { hash, difficulties: [] };
+    item.difficulties.push({
+      name: diff,
+      characteristic: 'Standard'
+    });
+  }
+  return [...items.values()];
 }
 
 const checkboxHardReset = /** @type {HTMLInputElement} */ (document.getElementById('enable-hard-refresh'));

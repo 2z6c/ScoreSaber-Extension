@@ -95,7 +95,7 @@ export class RankedSongManager {
   /**
    * @param {number} min minimum star rank
    * @param {number} max maximum star rank
-   * @returns {Promise<number>}
+   * @returns {Promise<[number,number]>}
    */
   async countRange( min, max ) {
     await this.#open();
@@ -103,9 +103,11 @@ export class RankedSongManager {
     const request = this.#db.transaction(KEY,'readonly')
       .objectStore(KEY)
       .index('star')
-      .count(range);
-    const n = await promisify(request);
+      .getAll(range);
+    const levels = await promisify(request);
     this.#close();
-    return n;
+    const n = levels.length;
+    const m = new Set(levels.map(v=>v.hash)).size;
+    return [n,m];
   }
 }
