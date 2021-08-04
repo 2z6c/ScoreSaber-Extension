@@ -77,6 +77,7 @@ button.addEventListener('click',async e => {
   ];
   // if ( star[1] === 14 ) star[1] = Infinity;
   const list = await rankedSongManager.getRange( star[0], star[1] );
+  console.dir( list );
   downloadJson({
     playlistTitle: `ScoreSaber Ranked Pool ★${star[0].toFixed(1)} - ${star[1].toFixed(1)}`,
     playlistAuthor: (await profileManager.get())?.name || 'ScoreSaber-Extension',
@@ -90,15 +91,15 @@ button.addEventListener('click',async e => {
  * @param {import('../types/database').Level} level
  * @returns {import('../types/beatsaber').BeatSaber.PlaylistSong }
  */
-function makeSongItem(level) {
-  return {
-    hash: level.hash,
-    difficulties: [{
-      name: level.diff,
-      characteristic: 'Standard',
-    }]
-  };
-}
+// function makeSongItem(level) {
+//   return {
+//     hash: level.hash,
+//     difficulties: [{
+//       name: level.diff,
+//       characteristic: 'Standard',
+//     }]
+//   };
+// }
 /**
  * make song list for playlist.json that removes duplicate
  * @param {import('../types/database').Level[]} levels
@@ -112,7 +113,9 @@ function makeSongItems( levels ) {
       name: diff,
       characteristic: 'Standard'
     });
+    items.set( hash, item );
   }
+  console.log(items);
   return [...items.values()];
 }
 
