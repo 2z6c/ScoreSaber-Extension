@@ -1,7 +1,8 @@
 import {
   readStorage,
   removeBookmark,
-  KEY_BOOKMARK
+  KEY_BOOKMARK,
+  clearStorage
 } from '../api/storage';
 import { BASE_URL } from '../integration/scoresaber';
 import { downloadJson, getExtensionImage } from '../util';
@@ -32,9 +33,12 @@ export async function initBookmark() {
   }
   const buttonDL = /** @type {HTMLButtonElement} */ (document.getElementById('download-as-playlist'));
   buttonDL.addEventListener('click',downloadPlaylist);
+  const buttonClear = /** @type {HTMLButtonElement} */ (document.getElementById('clear-bookmark'));
+  buttonClear.addEventListener('click',clearBookmark);
   if ( ul.childElementCount > 0 ) {
     ul.nextElementSibling.classList.add('hidden');
     buttonDL.disabled = false;
+    buttonClear.disabled = false;
   }
 }
 
@@ -72,6 +76,14 @@ async function downloadPlaylist(e) {
     songs: bookmarks.map(makeSongItem),
   });
   button.disabled = false;
+}
+
+/** @param {MouseEvent & {target:HTMLButtonElement}} e */
+async function clearBookmark(e) {
+  const button = e.target;
+  button.disabled = true;
+  await clearStorage(KEY_BOOKMARK);
+  document.getElementById('bookmark-song-list').innerHTML = '';
 }
 
 /**
