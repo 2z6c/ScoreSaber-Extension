@@ -11,7 +11,7 @@
     "build:pug": "pug src/ui/popup.pug -o dist/",
     "watch": "run-p watch:*",
     "watch:js": "node build/build.js development 1",
-    "watch:pug": "npm run compile:pug -- --watch"
+    "watch:pug": "npm run build:pug -- --watch"
   },
   "author": "nizhack",
   "license": "MIT",
