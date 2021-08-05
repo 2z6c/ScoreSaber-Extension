@@ -50,6 +50,12 @@ class ScoreCellTop {
   }
 }
 
+/**
+ * The coefficient to emphasize the difference of scores.
+ * The higher the value, the more it emphasizes small differences
+ * but obscures large differences.
+ */
+const GAIN = 0.1;
 class ScoreCellSeparator {
   title = '';
   classes = ['score-separater'];
@@ -59,7 +65,8 @@ class ScoreCellSeparator {
   compare( base, target ) {
     base = parseFloat(base);
     target = parseFloat(target);
-    const v = target * 200 / (target + base) - 100;
+    const v = 200 / ( 1 + Math.exp((base - target) * GAIN) ) - 100;
+    console.log( target - base, v );
     if ( v < 0 ) {
       this.color[0] = 'lightgreen';
       this.guage( -v );
