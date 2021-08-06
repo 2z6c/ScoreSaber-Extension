@@ -1,6 +1,14 @@
 // partially
 export declare namespace BeatSaver {
   export interface Map {
+    id: string;
+    hash: string;
+    description: string;
+    name: string;
+    metadata: MapMetadata;
+    versions: [Map0];
+  }
+  export interface Map0 {
     key: string;
     hash: string;
     downloadURL: string;

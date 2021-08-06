@@ -114,7 +114,7 @@ async function oneClickInstall(e){
   const hash = button.dataset.hash;
   if ( !hash ) return;
   // button.disabled = true;
-  const key = (await getMapByHash(hash))?.key;
+  const key = (await getMapByHash(hash))?.id;
   if ( !key ) {
     console.error('cannot get map key.');
     return;
