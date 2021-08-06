@@ -9,7 +9,7 @@ export async function initFavorite() {
   const tmp = document.getElementById('favorite-item-template').content;
   for await ( const user of favorite ) {
     const li = tmp.cloneNode(true).firstElementChild;
-    li.querySelector('.favorite-player-avator').src = user.avatar;
+    li.querySelector('.favorite-player-avator').src = `${BASE_URL}${user.avatar}`;
     li.querySelector('.favorite-player-country').src = `${BASE_URL}/imports/images/flags/${user.country}.png`;
     const a = li.querySelector('.favorite-player-name');
     a.textContent = user.name;
@@ -23,9 +23,9 @@ export async function initFavorite() {
   if ( ul.childElementCount ) ul.nextElementSibling.classList.add('hidden');
 }
 
-/** @param {MouseEvent & {target:HTMLElement}} e */
+/** @param {MouseEvent & {currentTarget:HTMLElement}} e */
 function openUserPage(e) {
-  const link = e.target.dataset.link;
+  const link = e.currentTarget.dataset.link;
   window.open( link, '_blank' );
 }
 
