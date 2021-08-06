@@ -8,7 +8,7 @@ export const BEATSAVER_API = 'https://beatsaver.com/api';
  */
 export async function getMapByHash( hash, retries=2 ) {
   try {
-    const res = await fetch(`${BEATSAVER_API}/maps/by-hash/${hash}`);
+    const res = await fetch(`${BEATSAVER_API}/maps/hash/${hash}`);
     const map = await res.json();
     return map;
 } catch(e) {
