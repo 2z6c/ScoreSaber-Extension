@@ -42,9 +42,9 @@ export async function initBookmark() {
   }
 }
 
-/** @param {MouseEvent & {target:HTMLElement}} e */
+/** @param {MouseEvent & {currentTarget:HTMLElement}} e */
 function openSongPage(e) {
-  let url = e.target.dataset.link;
+  let url = e.currentTarget.dataset.link;
   if ( url[0] === '/' ) url = BASE_URL + url;
   window.open( url, '_blank' );
 }
