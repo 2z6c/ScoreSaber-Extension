@@ -77,7 +77,7 @@ button.addEventListener('click',async e => {
   ];
   // if ( star[1] === 14 ) star[1] = Infinity;
   const list = await rankedSongManager.getRange( star[0], star[1] );
-  console.dir( list );
+  // console.dir( list );
   downloadJson({
     playlistTitle: `ScoreSaber Ranked Pool ★${star[0].toFixed(1)} - ${star[1].toFixed(1)}`,
     playlistAuthor: (await profileManager.get())?.name || 'ScoreSaber-Extension',
@@ -115,7 +115,7 @@ function makeSongItems( levels ) {
     });
     items.set( hash, item );
   }
-  console.log(items);
+  // console.log(items);
   return [...items.values()];
 }
 

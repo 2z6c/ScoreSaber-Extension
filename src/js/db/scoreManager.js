@@ -52,7 +52,7 @@ class ScoreManager {
       ? raw.score * 100 / raw.maxScore
       : void 0;
     await this.open();
-    console.log(raw);
+    // console.log(raw);
     const putReq = this.#db.transaction(KEY_SCORES,'readwrite').objectStore(KEY_SCORES).put({
       leaderboardId: raw.leaderboardId,
       userId,
@@ -120,7 +120,7 @@ class ScoreManager {
    */
   getRankOf( score ) {
     const index = this.#db.transaction(KEY_SCORES,'readonly').objectStore(KEY_SCORES).index('user');
-    console.log( score );
+    // console.log( score );
     const range = IDBKeyRange.bound(
       [score.userId,score.pp],
       [score.userId,Infinity]

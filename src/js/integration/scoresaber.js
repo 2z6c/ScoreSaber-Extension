@@ -170,7 +170,7 @@ export class SSRankedSongsRequest extends ScoreSaberRequest {
       await rankedSongManager.clear();
     }
     for await ( const song of this.eachSong() ) {
-      console.log(song);
+      // console.log(song);
       const finished = await rankedSongManager.add( song );
       if ( finished && !this.#hard ) break;
     }

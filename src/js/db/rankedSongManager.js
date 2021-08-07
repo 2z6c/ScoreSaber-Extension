@@ -15,7 +15,7 @@ export class RankedSongManager {
   async #open() {
     const request = indexedDB.open('rankedSongs',VERSION);
     const upgrade = e => {
-      console.log(e.target.result);
+      // console.log(e.target.result);
       this.#createObjectStore(e);
     };
     request.addEventListener('upgradeneeded', upgrade );
