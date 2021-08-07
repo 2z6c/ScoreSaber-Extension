@@ -90,10 +90,13 @@ async function handleBookmark(e) {
     Toast.push(`"${button.dataset.title}" has been removed from your bookmark.`);
   } else {
     let title = button.dataset.title;
-    if ( !title ) {
+    if ( !title ) try {
       const map = await getMapByHash(hash);
       title = map.metadata.songName;
       button.dataset.title = title;
+    } catch {
+      Toast.error(`Failed to fetch the song data. The BeatSaver may be down.`);
+      return;
     }
     await bookmark.add({
       hash, title, link,
