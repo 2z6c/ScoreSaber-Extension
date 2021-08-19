@@ -37,6 +37,10 @@ const api = {
   async getUser( userId ) {
     return await scoreManager.getUser( userId );
   },
+  async updateScore({userId, score}) {
+    console.log(`score update called`);
+    return await scoreManager.addScore( userId, score );
+  },
   async updateScores( userId ) {
     const request = new SSUserScoreRequest( userId );
     await request.send();
@@ -63,6 +67,9 @@ const api = {
   },
   async fetchUser(id) {
     return ScoreSaberIntegration.getUser(id);
+  },
+  async updateUser(user) {
+    return scoreManager.updateUser(user.userId, user);
   }
 };
 

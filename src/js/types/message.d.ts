@@ -19,6 +19,11 @@ export declare namespace Meggaging {
 
     getUser: (userId:string) => Promise<UserScore>;
 
+    updateScore: ({
+      userId: string,
+      score: any,
+    }) => Promise<unknown>;
+    
     updateScores: (
       userId: string
     ) => Promise<{
@@ -42,6 +47,12 @@ export declare namespace Meggaging {
     deleteDB: () => Promise<void>;
 
     fetchUser: (id:string) => Promise<Player>;
+    updateUser: (query: {
+      userId: string;
+      rankGlobal?: number;
+      rankLobal?: number;
+      pp?: number;
+    }) => Promise<unknown>;
   }
 
   export type ChannelName = keyof Channel;

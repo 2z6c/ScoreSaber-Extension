@@ -44,13 +44,14 @@ class ScoreManager {
     console.log('database updated');
   }
   /**
-   * @param {import('../types/scoresaber').ScoreSaber.Score} raw
+   * @param {import('../types/scoresaber').ScoreSaber.Score & {accuracy?:number}} raw
    * @param {string} userId
    */
   async addScore( userId, raw ) {
-    const accuracy = raw.maxScore
+    const accuracy = raw.accuracy ?? (raw.maxScore
       ? raw.score * 100 / raw.maxScore
-      : void 0;
+      : void 0);
+    if ( !userId ) return;
     await this.open();
     // console.log(raw);
     const putReq = this.#db.transaction(KEY_SCORES,'readwrite').objectStore(KEY_SCORES).put({
@@ -59,6 +60,7 @@ class ScoreManager {
       score: raw.score,
       pp: raw.pp,
       accuracy,
+      date: new Date(raw.timeSet).getTime(),
     });
     await promisify(putReq);
     this.close();
@@ -77,12 +79,14 @@ class ScoreManager {
   /**
    * @returns {Promise<void>}
    * @param {string} userId
+   * @param {any} [_user]
    */
-  async updateUser( userId ) {
+  async updateUser( userId, _user ) {
     const user = {
+      ..._user,
       userId,
       lastUpdated: Date.now(),
-      accumlatedScores: initAccumlatedScores( await this.getUserScore( userId ) ),
+      accumlatedScores: initAccumlatedScores( await this.getUserScore( userId ), _user.pp ),
     };
     await this.open();
     const putReq = this.#db.transaction(KEY_USERS,'readwrite').objectStore(KEY_USERS).put(user);

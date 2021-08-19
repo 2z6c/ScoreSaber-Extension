@@ -7,16 +7,17 @@ const PP_DECAY = 0.965;
 
 /**
  * @param {SongScore[]} scores
+ * @param {number} [totalPP]
  * @returns {number[]}
  */
-export function initAccumlatedScores( scores ) {
+export function initAccumlatedScores( scores, totalPP ) {
   if ( !scores ) return [];
   scores = scores.filter(v=>v.pp).sort((a,b)=>b.pp-a.pp);
   const tmp = [scores[0].pp];
   for ( let i = 1, f = PP_DECAY; i < scores.length; i++, f *= PP_DECAY ) {
     tmp[i] = tmp[i-1] + f * scores[i].pp;
   }
-  tmp.push(tmp[tmp.length-1]);
+  tmp.push(totalPP ?? tmp[tmp.length-1]);
   return tmp;
 }
 

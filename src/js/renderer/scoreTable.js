@@ -1,23 +1,24 @@
-import { addAction, extractHash } from '../util.js';
+import { addAction } from '../util.js';
 import { makeDifficultyLabel } from './difficultyLabel';
 import { profileManager } from '../profileManager.js';
 import { messageAPI } from '../api/message.js';
 import { ScoreCell } from './scoreCell.js';
+import { Scraper } from '../scrape.js';
 
-/**
- * @param {HTMLTableRowElement} tr
- */
-function extractRowData( tr ) {
-  tr.dataset.hash = extractHash( tr.querySelector('img').src);
-  tr.dataset.leaderboardId = new URL(tr.querySelector('.song a').getAttribute('href')).pathname.split('/').pop();
-  const cell = tr.querySelector('.score');
-  const ppRE = /[\d.]+(?=pp)/g;
-  tr.dataset.pp = ppRE.exec(cell.textContent)?.[0];
-  tr.dataset.wpp = ppRE.exec(cell.textContent)?.[0];
-  tr.dataset.accuracy = /[\d.]+(?=%)/.exec(cell.textContent)?.[0];
-  const score = /(?<=score:\s+)[\d,]+/.exec(cell.textContent)?.[0];
-  if ( score ) tr.dataset.score = score.replace(/[^\d]/g,'');
-}
+// /**
+//  * @param {HTMLTableRowElement} tr
+//  */
+// function extractRowData( tr ) {
+//   tr.dataset.hash = extractHash( tr.querySelector('img').src);
+//   tr.dataset.leaderboardId = new URL(tr.querySelector('.song a').getAttribute('href')).pathname.split('/').pop();
+//   const cell = tr.querySelector('.score');
+//   const ppRE = /[\d.]+(?=pp)/g;
+//   tr.dataset.pp = ppRE.exec(cell.textContent)?.[0];
+//   tr.dataset.wpp = ppRE.exec(cell.textContent)?.[0];
+//   tr.dataset.accuracy = /[\d.]+(?=%)/.exec(cell.textContent)?.[0];
+//   const score = /(?<=score:\s+)[\d,]+/.exec(cell.textContent)?.[0];
+//   if ( score ) tr.dataset.score = score.replace(/[^\d]/g,'');
+// }
 
 /**
  * @param {HTMLTableRowElement} tr
@@ -108,10 +109,11 @@ export async function arrangeScoreTable() {
   if (user)
     tr[0].insertAdjacentHTML('beforeend', `<th>${user.name}</th>`);
   tr[0].insertAdjacentHTML('beforeend', '<th>Action</th>');
+  const scraper = new Scraper();
   for (let i = 1; i < tr.length; i++) {
-    extractRowData(tr[i]);
-    const hash = tr[i].dataset.hash;
-
+    // extractRowData(tr[i]);
+    const {hash} = scraper.scrapeSongScore(tr[i]);
+    // const hash = tr[i].dataset.hash;
     fixImageLink(tr[i]);
     addStars(tr[i], hash);
     moveMapper(tr[i]);
@@ -121,4 +123,5 @@ export async function arrangeScoreTable() {
     if (user)
       addComparison(tr[i], user.id);
   }
+  scraper.updateUser();
 }

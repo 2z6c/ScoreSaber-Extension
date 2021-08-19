@@ -20,5 +20,7 @@ export const messageAPI = {
   getStar( query ) { return postToBackground('getStar',query); },
   deleteDB() { return postToBackground('deleteDB', true); },
   fetchUser( query ) { return postToBackground('fetchUser',query); },
+  updateScore( query ) { return postToBackground( 'updateScore', query ); },
   updateScores( userId ) { return postToBackground( 'updateScores', userId ); },
+  updateUser( query ) { return postToBackground( 'updateUser', query ); },
 };
