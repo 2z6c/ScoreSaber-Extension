@@ -86,7 +86,7 @@ class ScoreManager {
       ..._user,
       userId,
       lastUpdated: Date.now(),
-      accumlatedScores: initAccumlatedScores( await this.getUserScore( userId ), _user.pp ),
+      accumlatedScores: initAccumlatedScores( await this.getUserScore( userId ), _user?.pp ),
     };
     await this.open();
     const putReq = this.#db.transaction(KEY_USERS,'readwrite').objectStore(KEY_USERS).put(user);

@@ -55,7 +55,7 @@ export class Scraper {
       }
     /** @type {any} */
     const psudeRaw = { ...score };
-    psudeRaw.maxScore ??= score.accuracy ? score.score / score.accuracy / 100: 0;
+    // psudeRaw.maxScore ??= score.accuracy ? score.score / score.accuracy / 100: 0;
     // console.log(`song[${score.leaderboardId}] score has been updated`,oldScore,score);
     messageAPI.updateScore({userId:this.userId, score:psudeRaw});
   }
