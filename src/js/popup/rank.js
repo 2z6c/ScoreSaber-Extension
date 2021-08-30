@@ -19,33 +19,33 @@ const number = [
 
 range[0].addEventListener('change',e => {
   number[0].value = range[0].value;
-  changeMin( range[0].value );
+  syncMin( range[0].value );
   countLevels();
 });
 range[1].addEventListener('change',e => {
   number[1].value = range[1].value;
-  changeMax( range[1].value );
+  syncMax( range[1].value );
   countLevels();
 });
 number[0].addEventListener('change', e => {
   range[0].value = number[0].value;
-  changeMin( number[0].value );
+  syncMin( number[0].value );
   countLevels();
 });
 number[1].addEventListener('change', e => {
   range[1].value = number[1].value;
-  changeMax( number[1].value );
+  syncMax( number[1].value );
   countLevels();
 });
 
-function changeMin( min ) {
+function syncMin( min ) {
   // number[1].min = range[1].min = value;
   if ( parseFloat(number[1].value) < parseFloat(min) ) {
     number[1].value = range[1].value = min;
   }
 }
 
-function changeMax( max ) {
+function syncMax( max ) {
   // number[0].max = range[0].max = value;
   if ( parseFloat(number[0].value) > parseFloat(max) ) {
     number[0].value = range[0].value = max;
@@ -110,7 +110,7 @@ function makeSongItems( levels ) {
   for ( const {hash,diff} of levels ) {
     const item = items.get(hash) ?? { hash, difficulties: [] };
     item.difficulties.push({
-      name: diff,
+      name: diff.replace('+','Plus'),
       characteristic: 'Standard'
     });
     items.set( hash, item );
