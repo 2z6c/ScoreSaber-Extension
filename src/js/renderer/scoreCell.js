@@ -66,7 +66,7 @@ class ScoreCellSeparator {
     base = parseFloat(base);
     target = parseFloat(target);
     const v = 200 / ( 1 + Math.exp((base - target) * GAIN) ) - 100;
-    if ( v < 0 ) {
+    if ( v <= 0 ) {
       this.color[0] = 'lightgreen';
       this.guage( -v );
     } else if ( v > 0 ) {
