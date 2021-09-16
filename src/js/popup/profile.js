@@ -34,8 +34,8 @@ export class FormProfile {
     this.$userName.setAttribute( 'href', `${BASE_URL}/u/${user.id}`);
     this.$avatar.setAttribute( 'src', user.avatar );
     this.$flag.setAttribute( 'src', `${BASE_URL}/imports/images/flags/${user.country}.png` );
-    this.$globalRank.textContent = `#${user.globalRank.toLocaleString()}`;
-    this.$countryRank.textContent = `#${user.countryRank.toLocaleString()}`;
+    this.$globalRank.textContent = `#${user.rankGlobal.toLocaleString()}`;
+    this.$countryRank.textContent = `#${user.rankLocal.toLocaleString()}`;
     this.$inputUserId.setAttribute('value', user.id);
     // eslint-disable-next-line no-cond-assign
     if ( this.locked = user.locked ) {
