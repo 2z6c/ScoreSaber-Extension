@@ -12,7 +12,7 @@ function create(html) {
  * @property {number} pp
  * @property {number} [accuracy]
  * @property {number} [score]
- * @property {number} leaderboardId
+ * @property {string} leaderboardId
  */
 
 class ScoreCellTop {
@@ -27,7 +27,12 @@ class ScoreCellTop {
   set sub(text) {
     this.value[1] = text;
   }
-  async predict( leaderboardId, targetPP ) {
+  /**
+   * @param {string} leaderboardId
+   * @param {number} targetPP
+   * @param {boolean} [isSelf]
+   */
+  async predict( leaderboardId, targetPP, isSelf ) {
     let gain = 0;
     if ( this.#pp < targetPP ) {
       gain = await messageAPI.predictScore({
@@ -36,6 +41,7 @@ class ScoreCellTop {
       });
       // gain = Math.round( gain * 100 ) / 100;
     }
+    if ( isSelf ) gain = -gain;
     this.value[1] = `+${formatter.toFraction(gain)}pp`;
   }
   create() {
@@ -112,13 +118,15 @@ class ScoreCellBottom {
   get score() { return this.#score; }
   /**
    * @param {Score} target
+   * @param {boolean} isSelf
    */
-  compare( target ) {
+  compare( target, isSelf ) {
     if ( isFinite(target.accuracy) ) {
       this.#gap = formatter.toSignedPercent((this.#accuracy ?? 0) - target.accuracy);
     } else {
       this.#gap = formatter.toInteger((this.score ?? 0) - (target.score ?? 0));
     }
+    if ( isSelf ) this.#gap = -this.#gap;
     return this.#gap > 0;
   }
   create() {
@@ -176,16 +184,21 @@ export class ScoreCell {
   /**
    * @param {import('../types/database').SongScore} base Your score
    * @param {Score} target Opponent's score
+   * @param {boolean} [isSelf]
    */
-  static async compare( base, target ) {
+  static async compare( base, target, isSelf ) {
     const mine = new ScoreCell();
     if ( base?.pp ) mine.top.pp = base.pp;
     if ( base?.score ) mine.bottom.score = base.score;
     if ( base?.accuracy ) mine.bottom.accuracy = base.accuracy;
     if ( target.pp ) {
-      await mine.top.predict( target.leaderboardId, target.pp );
-      mine.hr.compare( base?.pp, target.pp );
-      mine.bottom.compare(target);
+      await mine.top.predict( target.leaderboardId, target.pp, isSelf );
+      if ( isSelf ) {
+        mine.hr.compare( target.pp, base?.pp );
+      } else {
+        mine.hr.compare( base?.pp, target.pp );
+      }
+      mine.bottom.compare(target, isSelf);
     }
     return mine.create();
   }

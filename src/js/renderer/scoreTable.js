@@ -80,7 +80,7 @@ async function addComparison(tr,userId) {
     leaderboardId: parseInt(target.leaderboardId),
     userId
   });
-  td.insertAdjacentElement('afterbegin', await ScoreCell.compare( score, target ) );
+  td.insertAdjacentElement('afterbegin', await ScoreCell.compare( score, target, await profileManager.is(userId) ) );
   /*
   if ( !score ) {
     td.style.backgroundImage = makeGradient(-100);
