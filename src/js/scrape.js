@@ -49,7 +49,7 @@ export class Scraper {
     if ( oldScore && (
       (oldScore.date ?? 0) >= score.timeSet ||
       oldScore.pp > score.pp ||
-      (oldScore.score ?? 0) > score.pp )) {
+      (oldScore.score ?? 0) > score.score )) {
         // console.log(`updating score is canceled`, oldScore, score);
         return;
       }
