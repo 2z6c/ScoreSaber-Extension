@@ -105,6 +105,28 @@ class ScoreManager {
     this.close();
     return scores;
   }
+  async getUserScores( userId ) {
+    await this.open();
+    const range = IDBKeyRange.only(userId);
+    const index = this.#db.transaction(KEY_SCORES,'readonly').objectStore(KEY_SCORES).index('userId');
+    return await new Promise( resolve => {
+      /** @type {Record<string,SongScore>} */
+      const result = {};
+      index.openCursor(range).onsuccess = /** @param {Event & {target:{result:IDBCursor}}} e */ (e) => {
+        const cursor = /** @type {IDBCursor & {value:SongScore}} */ (e.target.result);
+        if ( cursor ) {
+          const score = cursor.value;
+          if ( !result[score.leaderboardId] ) result[score.leaderboardId] = score;
+          else if ( result[score.leaderboardId].pp < score.pp ) {
+            result[score.leaderboardId] = score;
+          }
+          cursor.continue();
+        } else {
+          resolve( result );
+        }
+      };
+    });
+  }
 
   /**
    * @param {string} userId
